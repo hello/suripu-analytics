@@ -1,0 +1,12 @@
+--- 
+app_name: AnalyticsProcessorDev
+debug: false
+kinesis: 
+  endpoint: "https://kinesis.us-east-1.amazonaws.com"
+  streams: 
+    sense_sensors_data: sense_sensors_data
+max_records: 100
+metrics_enabled: false
+redis:
+  host: localhost
+  port: 6379
