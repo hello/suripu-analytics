@@ -1,7 +1,8 @@
 package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
+
+import com.hello.suripu.core.configuration.RedisConfiguration;
 import io.dropwizard.Configuration;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -19,7 +20,6 @@ public class AnalyticsConfiguration extends Configuration {
     public Boolean getMetricsEnabled() {
         return metricsEnabled;
     }
-
 
     @Valid
     @NotNull
@@ -46,8 +46,14 @@ public class AnalyticsConfiguration extends Configuration {
         return kinesisConfiguration.getEndpoint();
     }
 
-    public ImmutableMap<String, String> getQueues() {
-        return ImmutableMap.copyOf(kinesisConfiguration.getStreams());
+
+    @Valid
+    @NotNull
+    @JsonProperty("dynamodb")
+    private NewDynamoDBConfiguration dynamoDBConfiguration;
+
+    public NewDynamoDBConfiguration dynamoDBConfiguration(){
+        return dynamoDBConfiguration;
     }
 
     @Valid

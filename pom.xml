@@ -2,9 +2,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.hello.suripu</groupId>
+  <groupId>com.hello.analytics</groupId>
   <artifactId>suripu-analytics</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <packaging>jar</packaging>
 
   <name>suripu-analytics</name>
@@ -13,7 +13,24 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dropwizard.version>0.8.1</dropwizard.version>
+    <aws.sdk.version>1.9.37</aws.sdk.version>
+    <protobuf.version>2.5.0</protobuf.version>
+    <jodatime.version>20150319</jodatime.version>
+    <jackson.version>1.8.9</jackson.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <id>s3.release</id>
+      <name>Hello Releases</name>
+      <url>s3://hello-maven/release</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -42,8 +59,35 @@
       <artifactId>metrics-graphite</artifactId>
       <version>2.2.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.hello.suripu</groupId>
+      <artifactId>suripu-core</artifactId>
+      <version>0.4.48</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hello.suripu</groupId>
+      <artifactId>suripu-api</artifactId>
+      <version>0.4.48</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>[14.0.1]</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.5.0</version>
+    </dependency>
   </dependencies>
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.springframework.build</groupId>
+        <artifactId>aws-maven</artifactId>
+        <version>5.0.0.RELEASE</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

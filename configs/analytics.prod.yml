@@ -1,0 +1,30 @@
+--- 
+app_name: AnalyticsProcessor
+debug: false
+
+kinesis:
+  endpoint: https://kinesis.us-east-1.amazonaws.com
+  streams:
+    sense_sensors_data: sense_sensors_data
+
+dynamodb:
+  region: us-east-1
+  tables:
+    alarm_info: alarm_info
+    sense_last_seen : sense_last_seen
+  endpoints:
+    alarm_info: http://dynamodb.us-east-1.amazonaws.com
+    sense_last_seen : http://dynamodb.us-east-1.amazonaws.com
+
+logging: 
+  level: INFO
+  loggers: 
+    com.hello.suripu.analytics: DEBUG
+
+max_records: 100
+
+metrics_enabled: false
+
+redis: 
+  host: stats.xoe7je.0001.use1.cache.amazonaws.com
+  port: 6379

@@ -1,5 +1,6 @@
 package com.hello.suripu.analytics.sense;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
@@ -7,11 +8,14 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorC
 import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.hello.suripu.analytics.models.FirmwareInfo;
-import com.hello.suripu.analytics.protos.DataInputProtos;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
+import com.hello.suripu.api.input.DataInputProtos;
+import com.hello.suripu.core.db.MergedUserInfoDynamoDB;
+import com.hello.suripu.core.models.FirmwareInfo;
+import com.hello.suripu.core.models.UserInfo;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -25,9 +29,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final MergedUserInfoDynamoDB mergedInfoDynamoDB;
 
-    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
+    public SenseStatsProcessor(final MergedUserInfoDynamoDB mergedInfoDynamoDB, final ActiveDevicesTracker activeDevicesTracker){
 
+        this.mergedInfoDynamoDB = mergedInfoDynamoDB;
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
@@ -57,31 +63,31 @@ public class SenseStatsProcessor implements IRecordProcessor {
             //Logging seen device before attempting account pairing
             allSeenSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
 
-//            // This is the default timezone.
-//            final List<UserInfo> deviceAccountInfoFromMergeTable = Lists.newArrayList();
-//            int retries = 2;
-//            for(int i = 0; i < retries; i++) {
-//                try {
-//                    deviceAccountInfoFromMergeTable.addAll(this.mergedInfoDynamoDB.getInfo(deviceName));  // get everything by one hit
-//                    break;
-//                } catch (AmazonClientException exception) {
-//                    LOGGER.error("Failed getting info from DynamoDB for device = {}", deviceName);
-//                }
-//
-//                try {
-//                    LOGGER.warn("Sleeping for 1 sec");
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e1) {
-//                    LOGGER.warn("Thread sleep interrupted");
-//                }
-//                retries++;
-//            }
-//
-//            if(deviceAccountInfoFromMergeTable.isEmpty()) {
-//                LOGGER.warn("Device {} is not stored in DynamoDB or doesn't have any accounts linked.", deviceName);
-//            } else { // track only for sense paired to accounts
-//                activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
-//            }
+            // This is the default timezone.
+            final List<UserInfo> deviceAccountInfoFromMergeTable = Lists.newArrayList();
+            int retries = 2;
+            for(int i = 0; i < retries; i++) {
+                try {
+                    deviceAccountInfoFromMergeTable.addAll(this.mergedInfoDynamoDB.getInfo(deviceName));  // get everything by one hit
+                    break;
+                } catch (AmazonClientException exception) {
+                    LOGGER.error("Failed getting info from DynamoDB for device = {}", deviceName);
+                }
+
+                try {
+                    LOGGER.warn("Sleeping for 1 sec");
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    LOGGER.warn("Thread sleep interrupted");
+                }
+                retries++;
+            }
+
+            if(deviceAccountInfoFromMergeTable.isEmpty()) {
+                LOGGER.warn("Device {} is not stored in DynamoDB or doesn't have any accounts linked.", deviceName);
+            } else { // track only for sense paired to accounts
+                activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
+            }
 
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
@@ -90,7 +96,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
 
-                //TODO: Eventually break out metrics to their own worker
                 seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion.toString(), deviceName, timestampMillis));
             }
 

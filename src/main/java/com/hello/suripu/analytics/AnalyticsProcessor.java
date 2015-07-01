@@ -1,15 +1,14 @@
 package com.hello.suripu.analytics;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.sense.SenseStatsCommand;
-import com.hello.suripu.analytics.sense.SenseStatsProcessor;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.util.TimeZone;
 import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A dropwizard application that essentially mimics the same/similar structure as the

@@ -2,15 +2,12 @@ package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import io.dropwizard.Configuration;
+import com.hello.suripu.core.configuration.QueueName;
 import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-/**
- * Created by jnorgan on 6/29/15.
- */
-public class KinesisConfiguration extends Configuration{
+public class KinesisConfiguration {
 
     @Valid
     @NotNull

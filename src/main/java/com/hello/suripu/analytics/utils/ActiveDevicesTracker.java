@@ -2,7 +2,7 @@ package com.hello.suripu.analytics.utils;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.hello.suripu.analytics.models.FirmwareInfo;
+import com.hello.suripu.core.models.FirmwareInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
