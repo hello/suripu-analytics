@@ -2,7 +2,6 @@ package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.hello.suripu.core.configuration.QueueName;
 import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -11,11 +10,11 @@ public class KinesisConfiguration {
 
     @Valid
     @NotNull
-    @JsonProperty
-    private String endpoint;
+    @JsonProperty("endpoints")
+    private Map<String, String> endpoints;
 
-    public String getEndpoint() {
-        return endpoint;
+    public ImmutableMap<String, String> getEndpoints() {
+        return ImmutableMap.copyOf(endpoints);
     }
 
 

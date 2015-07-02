@@ -1,9 +1,8 @@
 package com.hello.suripu.analytics;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
-import com.hello.suripu.analytics.sense.SenseStatsCommand;
+import com.hello.suripu.analytics.processors.PillStatsCommand;
+import com.hello.suripu.analytics.processors.SenseStatsCommand;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -33,6 +32,7 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
     @Override
     public void initialize(Bootstrap<AnalyticsConfiguration> bootstrap) {
         bootstrap.addCommand(new SenseStatsCommand("sense_stats", "Analyzing incoming sense data."));
+        bootstrap.addCommand(new PillStatsCommand("pill_stats", "Analyzing incoming pill data."));
     }
 
     @Override

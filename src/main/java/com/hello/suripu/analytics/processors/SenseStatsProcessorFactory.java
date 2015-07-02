@@ -1,4 +1,4 @@
-package com.hello.suripu.analytics.sense;
+package com.hello.suripu.analytics.processors;
 
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;

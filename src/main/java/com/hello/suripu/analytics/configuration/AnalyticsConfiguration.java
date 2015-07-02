@@ -2,8 +2,10 @@ package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.google.common.collect.ImmutableMap;
 import com.hello.suripu.core.configuration.RedisConfiguration;
 import io.dropwizard.Configuration;
+import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
@@ -23,11 +25,11 @@ public class AnalyticsConfiguration extends Configuration {
 
     @Valid
     @NotNull
-    @JsonProperty("app_name")
-    private String appName;
+    @JsonProperty("app_names")
+    private Map<String, String> appNames;
 
-    public String getAppName() {
-        return appName;
+    public ImmutableMap<String, String> getAppNames() {
+        return ImmutableMap.copyOf(appNames);
     }
 
     @Valid
@@ -42,8 +44,12 @@ public class AnalyticsConfiguration extends Configuration {
     @JsonProperty("kinesis")
     private KinesisConfiguration kinesisConfiguration;
 
-    public String getKinesisEndpoint() {
-        return kinesisConfiguration.getEndpoint();
+    public Map<String, String> getKinesisEndpoints() {
+        return kinesisConfiguration.getEndpoints();
+    }
+
+    public Map<String, String> getKinesisStreams() {
+        return kinesisConfiguration.getStreams();
     }
 
 

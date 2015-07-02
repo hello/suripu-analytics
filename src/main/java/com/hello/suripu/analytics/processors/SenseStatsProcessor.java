@@ -1,4 +1,4 @@
-package com.hello.suripu.analytics.sense;
+package com.hello.suripu.analytics.processors;
 
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
@@ -93,7 +93,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
-        LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
+        //LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 

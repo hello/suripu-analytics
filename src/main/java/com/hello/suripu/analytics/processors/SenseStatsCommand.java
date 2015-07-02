@@ -1,4 +1,4 @@
-package com.hello.suripu.analytics.sense;
+package com.hello.suripu.analytics.processors;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -18,7 +18,8 @@ import redis.clients.jedis.JedisPool;
  * Created by jnorgan on 6/29/15.
  */
 public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConfiguration> {
-    private final static String kinesisStreamName = "sense_sensors_data";
+    private final static String COMMAND_APP_NAME = "sense_stats";
+    private final static String COMMAND_STREAM_NAME = "sense_sensors_data";
 
     public SenseStatsCommand(final String name, final String description) {
         super(name, description);
@@ -30,13 +31,13 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
         final AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
         final String workerId = InetAddress.getLocalHost().getCanonicalHostName();
         final KinesisClientLibConfiguration kinesisConfig = new KinesisClientLibConfiguration(
-                configuration.getAppName(),
-                kinesisStreamName,
+                configuration.getAppNames().get(COMMAND_APP_NAME),
+                configuration.getKinesisStreams().get(COMMAND_STREAM_NAME),
                 awsCredentialsProvider,
                 workerId);
         kinesisConfig.withInitialPositionInStream(InitialPositionInStream.LATEST);
         kinesisConfig.withMaxRecords(configuration.getMaxRecords());
-        kinesisConfig.withKinesisEndpoint(configuration.getKinesisEndpoint());
+        kinesisConfig.withKinesisEndpoint(configuration.getKinesisEndpoints().get(COMMAND_STREAM_NAME));
         kinesisConfig.withIdleTimeBetweenReadsInMillis(20000);
 
         final JedisPool jedisPool = new JedisPool(
