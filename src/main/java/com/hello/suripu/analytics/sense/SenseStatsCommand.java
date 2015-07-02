@@ -3,18 +3,15 @@ package com.hello.suripu.analytics.sense;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
+import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
-import com.hello.suripu.analytics.configuration.NewDynamoDBConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
 
-import com.hello.suripu.core.clients.AmazonDynamoDBClientFactory;
 import com.hello.suripu.core.configuration.DynamoDBTableName;
-import com.hello.suripu.core.db.MergedUserInfoDynamoDB;
 import io.dropwizard.setup.Environment;
 import java.net.InetAddress;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -40,19 +37,17 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
                 kinesisStreamName,
                 awsCredentialsProvider,
                 workerId);
+        kinesisConfig.withInitialPositionInStream(InitialPositionInStream.LATEST);
         kinesisConfig.withMaxRecords(configuration.getMaxRecords());
         kinesisConfig.withKinesisEndpoint(configuration.getKinesisEndpoint());
+        kinesisConfig.withIdleTimeBetweenReadsInMillis(20000);
 
-        final ClientConfiguration clientConfig = (new ClientConfiguration()).withConnectionTimeout(200).withMaxErrorRetry(1);
-        AmazonDynamoDBClient alarmInfoDynamoDBClient = new AmazonDynamoDBClient(awsCredentialsProvider, clientConfig);
-        alarmInfoDynamoDBClient.setEndpoint(configuration.dynamoDBConfiguration().endpoints().get(DynamoDBTableName.ALARM_INFO.getValue()));
-        final MergedUserInfoDynamoDB mergedUserInfoDynamoDB = new MergedUserInfoDynamoDB(alarmInfoDynamoDBClient, DynamoDBTableName.ALARM_INFO.getValue());
         final JedisPool jedisPool = new JedisPool(
                 configuration.getRedisConfiguration().getHost(),
                 configuration.getRedisConfiguration().getPort()
         );
 
-        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(mergedUserInfoDynamoDB, jedisPool);
+        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(jedisPool);
 
         final Worker kinesisWorker = new Worker(processorFactory, kinesisConfig);
         kinesisWorker.run();

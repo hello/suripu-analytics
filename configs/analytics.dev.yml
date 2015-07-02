@@ -1,23 +1,25 @@
 --- 
 app_name: AnalyticsProcessorDev
 debug: false
-kinesis: 
-  endpoint: "https://kinesis.us-east-1.amazonaws.com"
-  streams: 
-    sense_sensors_data: dev_sense_sensors_data
+kinesis:
+  endpoint: https://kinesis.us-east-1.amazonaws.com
+  streams:
+    sense_sensors_data: sense_sensors_data
+dynamodb:
+  region: us-east-1
+  tables:
+    alarm_info: alarm_info
+    sense_last_seen : sense_last_seen
+  endpoints:
+    alarm_info: http://localhost:7777
+    sense_last_seen : http://localhost:7777
+
+logging: 
+  level: INFO
+  loggers: 
+    com.hello.suripu.analytics: DEBUG
 max_records: 100
 metrics_enabled: false
-redis:
+redis: 
   host: localhost
   port: 6379
-# Logging settings.
-logging:
-
-  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
-  level: INFO
-
-  # Logger-specific levels.
-  loggers:
-
-    # Sets the level for 'com.example.app' to DEBUG.
-    com.hello.suripu.analytics: DEBUG

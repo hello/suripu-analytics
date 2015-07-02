@@ -1,6 +1,5 @@
 package com.hello.suripu.analytics.sense;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
@@ -8,14 +7,13 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorC
 import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.api.input.DataInputProtos;
-import com.hello.suripu.core.db.MergedUserInfoDynamoDB;
 import com.hello.suripu.core.models.FirmwareInfo;
-import com.hello.suripu.core.models.UserInfo;
+import com.hello.suripu.core.processors.OTAProcessor;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -29,16 +27,14 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
-    private final MergedUserInfoDynamoDB mergedInfoDynamoDB;
 
-    public SenseStatsProcessor(final MergedUserInfoDynamoDB mergedInfoDynamoDB, final ActiveDevicesTracker activeDevicesTracker){
+    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
 
-        this.mergedInfoDynamoDB = mergedInfoDynamoDB;
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
     public void initialize(String s) {
-
+        LOGGER.debug("init {}", s);
     }
 
     @Timed
@@ -46,7 +42,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
         final Map<String, Long> activeSenses = Maps.newHashMap();
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
-        final Map<String, Long> allSeenSenses = Maps.newHashMap();
 
         for(final Record record : records) {
             DataInputProtos.BatchPeriodicDataWorker batchPeriodicDataWorker;
@@ -59,51 +54,35 @@ public class SenseStatsProcessor implements IRecordProcessor {
             }
 
             final String deviceName = batchPeriodicDataWorker.getData().getDeviceId();
+            final String deviceIPAddress = batchPeriodicDataWorker.getIpAddress();
 
-            //Logging seen device before attempting account pairing
-            allSeenSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
-
-            // This is the default timezone.
-            final List<UserInfo> deviceAccountInfoFromMergeTable = Lists.newArrayList();
-            int retries = 2;
-            for(int i = 0; i < retries; i++) {
-                try {
-                    deviceAccountInfoFromMergeTable.addAll(this.mergedInfoDynamoDB.getInfo(deviceName));  // get everything by one hit
-                    break;
-                } catch (AmazonClientException exception) {
-                    LOGGER.error("Failed getting info from DynamoDB for device = {}", deviceName);
-                }
-
-                try {
-                    LOGGER.warn("Sleeping for 1 sec");
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    LOGGER.warn("Thread sleep interrupted");
-                }
-                retries++;
-            }
-
-            if(deviceAccountInfoFromMergeTable.isEmpty()) {
-                LOGGER.warn("Device {} is not stored in DynamoDB or doesn't have any accounts linked.", deviceName);
-            } else { // track only for sense paired to accounts
+            //Filter out PCH IPs from active sense tracking
+            if (!OTAProcessor.isPCH(deviceIPAddress, Collections.EMPTY_LIST)) {
                 activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
             }
 
+            final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
+                if (fwVersionTimestampMap.containsKey(firmwareVersion) && fwVersionTimestampMap.get(firmwareVersion) > timestampMillis) {
+                    continue;
+                }
 
-                seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion.toString(), deviceName, timestampMillis));
+                fwVersionTimestampMap.put(firmwareVersion, timestampMillis);
             }
 
-            LOGGER.debug("Processed record for: {}", deviceName);
+            for(final Map.Entry<Integer, Long> mapEntry : fwVersionTimestampMap.entrySet()) {
+                final String firmwareVersion = mapEntry.getKey().toString();
+                final Long timeStamp = mapEntry.getValue();
+                seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, deviceName, timeStamp));
+            }
+
+            LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
         }
-
-
-
 
         try {
             iRecordProcessorCheckpointer.checkpoint();
@@ -113,8 +92,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
-
-        activeDevicesTracker.trackAllSeenSenses(allSeenSenses);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 
