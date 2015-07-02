@@ -1,10 +1,16 @@
 --- 
-app_name: AnalyticsProcessorDev
+app_names:
+  pill_stats: AnalyticsPillProcessorDev
+  sense_stats: AnalyticsSenseProcessorDev
 debug: false
 kinesis:
-  endpoint: https://kinesis.us-east-1.amazonaws.com
+  endpoints:
+    sense_sensors_data: https://kinesis.us-east-1.amazonaws.com
+    batch_pill_data: https://kinesis.us-east-1.amazonaws.com
   streams:
     sense_sensors_data: sense_sensors_data
+    batch_pill_data: batch_pill_data
+
 dynamodb:
   region: us-east-1
   tables:
@@ -19,7 +25,9 @@ logging:
   loggers: 
     com.hello.suripu.analytics: DEBUG
 max_records: 1000
+
 metrics_enabled: false
-redis: 
+
+redis:
   host: localhost
   port: 6379
