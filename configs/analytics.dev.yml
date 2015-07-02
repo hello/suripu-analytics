@@ -11,14 +11,14 @@ dynamodb:
     alarm_info: alarm_info
     sense_last_seen : sense_last_seen
   endpoints:
-    alarm_info: http://localhost:7777
+    alarm_info: http://dynamodb.us-east-1.amazonaws.com
     sense_last_seen : http://localhost:7777
 
 logging: 
   level: INFO
   loggers: 
     com.hello.suripu.analytics: DEBUG
-max_records: 100
+max_records: 1000
 metrics_enabled: false
 redis: 
   host: localhost
