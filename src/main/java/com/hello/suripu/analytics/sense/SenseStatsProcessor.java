@@ -27,14 +27,15 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private String shardId = "No Lease Key";
 
     public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
 
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
-    public void initialize(String s) {
-        LOGGER.debug("init {}", s);
+    public void initialize(String shardId) {
+        this.shardId = shardId;
     }
 
     @Timed
@@ -92,6 +93,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
+        LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 

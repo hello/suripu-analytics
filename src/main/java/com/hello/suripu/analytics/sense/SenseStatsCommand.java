@@ -1,9 +1,7 @@
 package com.hello.suripu.analytics.sense;
 
-import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
@@ -11,7 +9,6 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
 
-import com.hello.suripu.core.configuration.DynamoDBTableName;
 import io.dropwizard.setup.Environment;
 import java.net.InetAddress;
 import net.sourceforge.argparse4j.inf.Namespace;

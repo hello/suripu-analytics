@@ -19,7 +19,7 @@ dynamodb:
 logging: 
   level: INFO
   loggers: 
-    com.hello.suripu.analytics: DEBUG
+    com.hello.suripu.analytics: INFO
 
 max_records: 1000
 
