@@ -1,7 +1,7 @@
 --- 
 app_names:
-  pill_stats: AnalyticsPillProcessorDev
-  sense_stats: AnalyticsSenseProcessorDev
+  pill_stats: AnalyticsPillProcessor
+  sense_stats: AnalyticsSenseProcessor
 debug: false
 kinesis:
   endpoints:
