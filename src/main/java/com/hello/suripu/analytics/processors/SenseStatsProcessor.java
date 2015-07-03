@@ -13,9 +13,12 @@ import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +30,12 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final Meter messagesProcessed;
     private String shardId = "No Lease Key";
 
     public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
 
+        this.messagesProcessed = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
@@ -97,6 +102,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 
+        messagesProcessed.mark(records.size());
     }
 
     public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {

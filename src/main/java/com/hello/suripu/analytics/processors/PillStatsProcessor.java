@@ -11,12 +11,11 @@ import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.api.ble.SenseCommandProtos;
-import com.hello.suripu.api.input.DataInputProtos;
-import com.hello.suripu.core.models.FirmwareInfo;
-import com.hello.suripu.core.processors.OTAProcessor;
-import java.util.Collections;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +27,12 @@ public class PillStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(PillStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final Meter messagesProcessed;
     private String shardId = "No Lease Key";
 
     public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
 
+        this.messagesProcessed = Metrics.defaultRegistry().newMeter(PillStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
@@ -68,7 +69,7 @@ public class PillStatsProcessor implements IRecordProcessor {
         }
 
         activeDevicesTracker.trackPills(activePills);
-
+        messagesProcessed.mark(records.size());
     }
 
     public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {
