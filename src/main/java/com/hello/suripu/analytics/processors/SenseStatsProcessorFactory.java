@@ -3,6 +3,7 @@ package com.hello.suripu.analytics.processors;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
+import com.hello.suripu.analytics.utils.CheckpointTracker;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -18,6 +19,7 @@ public class SenseStatsProcessorFactory implements IRecordProcessorFactory {
 
     public IRecordProcessor createProcessor() {
         final ActiveDevicesTracker activeDevicesTracker = new ActiveDevicesTracker(jedisPool);
-        return new SenseStatsProcessor(activeDevicesTracker);
+        final CheckpointTracker checkpointTracker = new CheckpointTracker(jedisPool);
+        return new SenseStatsProcessor(activeDevicesTracker, checkpointTracker);
     }
 }

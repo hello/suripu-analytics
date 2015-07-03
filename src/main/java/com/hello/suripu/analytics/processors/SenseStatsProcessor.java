@@ -10,6 +10,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
+import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
@@ -27,11 +28,12 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final CheckpointTracker checkpointTracker;
     private String shardId = "No Lease Key";
 
-    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
-
+    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
         this.activeDevicesTracker = activeDevicesTracker;
+        this.checkpointTracker = checkpointTracker;
     }
 
     public void initialize(String shardId) {
@@ -45,7 +47,10 @@ public class SenseStatsProcessor implements IRecordProcessor {
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
 
         for(final Record record : records) {
+
+            final String sequenceNumber = record.getSequenceNumber();
             DataInputProtos.BatchPeriodicDataWorker batchPeriodicDataWorker;
+
             try {
                 batchPeriodicDataWorker = DataInputProtos.BatchPeriodicDataWorker.parseFrom(record.getData().array());
             } catch (InvalidProtocolBufferException e) {
@@ -65,6 +70,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
             final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
+
+                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
+                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
+                }
+
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
@@ -82,7 +92,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, deviceName, timeStamp));
             }
 
-            LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
+            //LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
         }
 
         try {
@@ -93,7 +103,8 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
-        //LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
+
+        LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 
