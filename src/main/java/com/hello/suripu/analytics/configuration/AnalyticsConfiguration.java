@@ -3,6 +3,7 @@ package com.hello.suripu.analytics.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.google.common.collect.ImmutableMap;
+import com.hello.suripu.core.configuration.GraphiteConfiguration;
 import com.hello.suripu.core.configuration.RedisConfiguration;
 import io.dropwizard.Configuration;
 import java.util.Map;
@@ -80,4 +81,12 @@ public class AnalyticsConfiguration extends Configuration {
         return redisConfiguration;
     }
 
+    @Valid
+    @NotNull
+    @JsonProperty("graphite")
+    private GraphiteConfiguration graphite;
+
+    public GraphiteConfiguration getGraphite() {
+        return graphite;
+    }
 }

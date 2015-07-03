@@ -20,10 +20,19 @@ dynamodb:
     alarm_info: http://dynamodb.us-east-1.amazonaws.com
     sense_last_seen : http://localhost:7777
 
+graphite:
+  host: carbon.hostedgraphite.com
+  api_key: 7509c0ff-4db5-4cae-91ee-6e78ff13b336
+  reporting_interval_in_seconds: 30
+  include_metrics:
+    - com.yammer
+    - com.hello
+
 logging: 
   level: INFO
   loggers: 
     com.hello.suripu.analytics: DEBUG
+
 max_records: 1000
 
 metrics_enabled: false
