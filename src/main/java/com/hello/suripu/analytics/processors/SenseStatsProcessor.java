@@ -31,11 +31,14 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
     private final ActiveDevicesTracker activeDevicesTracker;
     private final Meter messagesProcessed;
+    private final Meter waveCounts;
+
     private String shardId = "No Lease Key";
 
     public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
 
         this.messagesProcessed = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
+        this.waveCounts = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "waves", "wave-counts", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
     }
 
@@ -48,6 +51,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
         final Map<String, Long> activeSenses = Maps.newHashMap();
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
+        Long waveCountSum = 0L;
 
         for(final Record record : records) {
             DataInputProtos.BatchPeriodicDataWorker batchPeriodicDataWorker;
@@ -69,6 +73,9 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
             final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
+                final Integer waveCount = periodicData.getWaveCount();
+                waveCountSum += waveCount;
+
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
@@ -103,6 +110,8 @@ public class SenseStatsProcessor implements IRecordProcessor {
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 
         messagesProcessed.mark(records.size());
+        waveCounts.mark(waveCountSum);
+
     }
 
     public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {
