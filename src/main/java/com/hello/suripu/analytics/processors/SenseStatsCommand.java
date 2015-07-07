@@ -43,7 +43,7 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
             final Integer interval = configuration.getGraphite().getReportingIntervalInSeconds();
 
             final String env = (configuration.getDebug()) ? "dev" : "prod";
-            final String prefix = String.format("%s.%s.suripu-workers", apiKey, env);
+            final String prefix = String.format("%s.%s.suripu-analytics", apiKey, env);
 
             final List<String> metrics = configuration.getGraphite().getIncludeMetrics();
             final RegexMetricPredicate predicate = new RegexMetricPredicate(metrics);
