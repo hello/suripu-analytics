@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public class SenseStatsProcessor implements IRecordProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
-    private final static Integer LOW_UPTIME_THRESHOLD = 3600; //seconds
+    private final static Long LOW_UPTIME_THRESHOLD = 3600L; //seconds
 
     private final ActiveDevicesTracker activeDevicesTracker;
     private final Meter messagesProcessed;
@@ -66,7 +67,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
         Long waveCountSum = 0L;
 
-        if(DateTime.now().getMillis() > (lastFilterTimestamp + (LOW_UPTIME_THRESHOLD * 1000))) {
+        if(DateTime.now(DateTimeZone.UTC).getMillis() > (lastFilterTimestamp + (LOW_UPTIME_THRESHOLD * 1000L))) {
             createNewBloomFilter();
         }
 
