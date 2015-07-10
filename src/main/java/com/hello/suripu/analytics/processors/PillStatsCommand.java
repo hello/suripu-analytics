@@ -6,11 +6,19 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
+import com.google.common.base.Joiner;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
+import com.hello.suripu.core.metrics.RegexMetricPredicate;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.reporting.GraphiteReporter;
 import io.dropwizard.setup.Environment;
 import java.net.InetAddress;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -19,6 +27,7 @@ import redis.clients.jedis.JedisPool;
 public class PillStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConfiguration> {
     private final static String COMMAND_APP_NAME = "pill_stats";
     private final static String COMMAND_STREAM_NAME = "batch_pill_data";
+    private final static Logger LOGGER = LoggerFactory.getLogger(PillStatsCommand.class);
 
     public PillStatsCommand(final String name, final String description) {
         super(name, description);
@@ -26,6 +35,25 @@ public class PillStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConfi
 
     @Override
     protected void run(Environment environment, Namespace namespace, AnalyticsConfiguration configuration) throws Exception {
+
+        if(configuration.getMetricsEnabled()) {
+            final String graphiteHostName = configuration.getGraphite().getHost();
+            final String apiKey = configuration.getGraphite().getApiKey();
+            final Integer interval = configuration.getGraphite().getReportingIntervalInSeconds();
+
+            final String env = (configuration.getDebug()) ? "dev" : "prod";
+            final String prefix = String.format("%s.%s.suripu-analytics", apiKey, env);
+
+            final List<String> metrics = configuration.getGraphite().getIncludeMetrics();
+            final RegexMetricPredicate predicate = new RegexMetricPredicate(metrics);
+            final Joiner joiner = Joiner.on(", ");
+            LOGGER.info("Logging the following metrics: {}", joiner.join(metrics));
+            GraphiteReporter.enable(Metrics.defaultRegistry(), interval, TimeUnit.SECONDS, graphiteHostName, 2003, prefix, predicate);
+
+            LOGGER.info("Metrics enabled.");
+        } else {
+            LOGGER.warn("Metrics not enabled.");
+        }
 
         final AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
         final String workerId = InetAddress.getLocalHost().getCanonicalHostName();

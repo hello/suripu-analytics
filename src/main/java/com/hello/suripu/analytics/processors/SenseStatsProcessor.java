@@ -8,15 +8,22 @@ import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Maps;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Meter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,18 +33,33 @@ import org.slf4j.LoggerFactory;
 public class SenseStatsProcessor implements IRecordProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
+    private final static Long LOW_UPTIME_THRESHOLD = 3600L; //seconds
 
     private final ActiveDevicesTracker activeDevicesTracker;
     private final CheckpointTracker checkpointTracker;
+    private final Meter messagesProcessed;
+    private final Meter waveCounts;
+    private final Meter lowUptimeCount;
+    private BloomFilter<CharSequence> bloomFilter;
+    private Long lastFilterTimestamp;
     private String shardId = "No Lease Key";
 
     public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
+        this.messagesProcessed = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
+        this.waveCounts = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "waves", "wave-counts", TimeUnit.SECONDS);
+        this.lowUptimeCount = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "lowuptime", "low-uptime", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
     }
 
     public void initialize(String shardId) {
         this.shardId = shardId;
+        createNewBloomFilter();
+    }
+
+    private void createNewBloomFilter() {
+        bloomFilter = BloomFilter.create(Funnels.stringFunnel(), 20000, 0.03);
+        this.lastFilterTimestamp = DateTime.now().getMillis();
     }
 
     @Timed
@@ -45,6 +67,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
         final Map<String, Long> activeSenses = Maps.newHashMap();
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
+        Long waveCountSum = 0L;
+
+        if(DateTime.now(DateTimeZone.UTC).getMillis() > (lastFilterTimestamp + (LOW_UPTIME_THRESHOLD * 1000L))) {
+            createNewBloomFilter();
+        }
 
         for(final Record record : records) {
 
@@ -61,6 +88,15 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
             final String deviceName = batchPeriodicDataWorker.getData().getDeviceId();
             final String deviceIPAddress = batchPeriodicDataWorker.getIpAddress();
+            final Integer deviceUptime = batchPeriodicDataWorker.getUptimeInSecond();
+
+            if (deviceUptime <= LOW_UPTIME_THRESHOLD) {
+                if(!bloomFilter.mightContain(deviceName)) {
+                    bloomFilter.put(deviceName);
+                    lowUptimeCount.mark(1);
+                }
+
+            }
 
             //Filter out PCH IPs from active sense tracking
             if (!OTAProcessor.isPCH(deviceIPAddress, Collections.EMPTY_LIST)) {
@@ -69,6 +105,9 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
             final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
+                final Integer waveCount = periodicData.getWaveCount();
+                waveCountSum += waveCount;
+
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
 
                 if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
@@ -107,6 +146,9 @@ public class SenseStatsProcessor implements IRecordProcessor {
         LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
+
+        messagesProcessed.mark(records.size());
+        waveCounts.mark(waveCountSum);
 
     }
 

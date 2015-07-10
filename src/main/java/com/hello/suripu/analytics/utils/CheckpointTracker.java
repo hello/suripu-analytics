@@ -7,7 +7,7 @@ import redis.clients.jedis.JedisPool;
 public class CheckpointTracker {
     public static final String CHECKPOINT_TRACK_KEY = "checkpoint_track";
     public static final Integer CHECKPOINT_NUM_TRACKS = 24;
-    public static final Integer CHECKPOINT_TRACK_PERIOD = 2;   // in minutes
+    public static final Long CHECKPOINT_TRACK_PERIOD = 2L;   // in minutes
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckpointTracker.class);
     private final JedisPool jedisPool;
