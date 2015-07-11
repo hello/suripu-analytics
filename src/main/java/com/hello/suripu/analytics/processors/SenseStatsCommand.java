@@ -1,7 +1,10 @@
 package com.hello.suripu.analytics.processors;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
@@ -29,6 +32,7 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
     private final static String COMMAND_APP_NAME = "sense_stats";
     private final static String COMMAND_STREAM_NAME = "sense_sensors_data";
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsCommand.class);
+    private final static ClientConfiguration DEFAULT_CLIENT_CONFIGURATION = new ClientConfiguration().withConnectionTimeout(200).withMaxErrorRetry(1);
 
     public SenseStatsCommand(final String name, final String description) {
         super(name, description);
@@ -57,6 +61,10 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
         }
 
         final AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
+
+        final AmazonDynamoDB checkpoinTrackerclient = new AmazonDynamoDBClient(awsCredentialsProvider, DEFAULT_CLIENT_CONFIGURATION);
+        checkpoinTrackerclient.setEndpoint(configuration.dynamoDBConfiguration().endpoints().get("kinesis_checkpoint_track"));
+
         final String workerId = InetAddress.getLocalHost().getCanonicalHostName();
         final KinesisClientLibConfiguration kinesisConfig = new KinesisClientLibConfiguration(
                 configuration.getAppNames().get(COMMAND_APP_NAME),

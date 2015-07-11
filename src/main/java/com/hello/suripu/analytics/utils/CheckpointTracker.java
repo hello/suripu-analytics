@@ -23,6 +23,9 @@ public class CheckpointTracker {
         final Long delta = (timestamp - lastCheckpointTimestamp);
         LOGGER.debug("Checkpoint Timestamp Delta: {}", delta.toString());
         lastCheckpointTimestamp = timestamp;
+
+        //Track Hash = Appname:ShardId; Range = timestamp; Checkpoint;
+
         LOGGER.debug("Tracked kinesis checkpoint for shardId: {}", shardId);
     }
     public Boolean isEligibleForTracking(final Long recordTimestamp) {
