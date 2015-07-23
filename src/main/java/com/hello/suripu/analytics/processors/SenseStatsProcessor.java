@@ -11,20 +11,22 @@ import com.google.common.collect.Maps;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jnorgan on 6/29/15.
@@ -65,12 +67,13 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
         final Map<String, Long> activeSenses = Maps.newHashMap();
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
+        final Map<String, WifiInfo> wifiInfos = Maps.newHashMap();
+
         Long waveCountSum = 0L;
 
         if(DateTime.now(DateTimeZone.UTC).getMillis() > (lastFilterTimestamp + (LOW_UPTIME_THRESHOLD * 1000L))) {
             createNewBloomFilter();
         }
-
         for(final Record record : records) {
             DataInputProtos.BatchPeriodicDataWorker batchPeriodicDataWorker;
             try {
@@ -99,7 +102,18 @@ public class SenseStatsProcessor implements IRecordProcessor {
             }
 
             final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
-            for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {
+
+            final DataInputProtos.batched_periodic_data batchedPeriodicData = batchPeriodicDataWorker.getData();
+            final String connectedSSID = batchedPeriodicData.getConnectedSsid();
+
+            Integer rssi = 0;
+            for (final DataInputProtos.batched_periodic_data.wifi_access_point wifiAccessPoint : batchedPeriodicData.getScanList()) {
+                if (connectedSSID.equals(wifiAccessPoint.getSsid())) {
+                    rssi = wifiAccessPoint.getRssi();
+                }
+            }
+
+            for(final DataInputProtos.periodic_data periodicData : batchedPeriodicData.getDataList()) {
                 final Integer waveCount = periodicData.getWaveCount();
                 waveCountSum += waveCount;
 
@@ -120,8 +134,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 final Long timeStamp = mapEntry.getValue();
                 seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, deviceName, timeStamp));
             }
-
-            LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
+            wifiInfos.put(deviceName, new WifiInfo(rssi, connectedSSID));
         }
 
         try {
@@ -135,6 +148,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         //LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
+        activeDevicesTracker.trackWifiInfo(wifiInfos);
 
         messagesProcessed.mark(records.size());
         waveCounts.mark(waveCountSum);

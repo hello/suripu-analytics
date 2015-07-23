@@ -2,6 +2,7 @@ package com.hello.suripu.analytics.utils;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.core.models.FirmwareInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ public class ActiveDevicesTracker {
     public static final String PILL_ACTIVE_SET_KEY = "active_pills";
     public static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
     public static final String ALL_DEVICES_SEEN_SET_KEY = "all_seen_senses";
+    public static final String WIFI_INFO_HASH_KEY = "wifi_info";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
     private final JedisPool jedisPool;
@@ -111,5 +113,35 @@ public class ActiveDevicesTracker {
             }
         }
         LOGGER.debug("Tracked {} device firmware versions", seenFirmwares.size());
+    }
+
+    public void trackWifiInfo(final Map<String, WifiInfo> wifiInfos) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            final Pipeline pipe = jedis.pipelined();
+            pipe.multi();
+            for(final Map.Entry <String, WifiInfo> entry : wifiInfos.entrySet()) {
+                final WifiInfo wifiInfo = entry.getValue();
+                pipe.hset(WIFI_INFO_HASH_KEY, entry.getKey(), String.format("%s : %s", wifiInfo.ssid, wifiInfo.rssi));
+            }
+            pipe.exec();
+        }catch (JedisDataException exception) {
+            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            jedisPool.returnBrokenResource(jedis);
+            return;
+        } catch(Exception exception) {
+            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            jedisPool.returnBrokenResource(jedis);
+            return;
+        }
+        finally {
+            try{
+                jedisPool.returnResource(jedis);
+            }catch (JedisConnectionException e) {
+                LOGGER.error("Jedis Connection Exception while returning resource to pool. Redis server down?");
+            }
+        }
+        LOGGER.debug("Tracked wifi info for  {} senses", wifiInfos.size());
     }
 }
