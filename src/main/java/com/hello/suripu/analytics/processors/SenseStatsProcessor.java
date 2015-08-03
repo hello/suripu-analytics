@@ -130,8 +130,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 final Long timeStamp = mapEntry.getValue();
                 seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, deviceName, timeStamp));
             }
-
-            //LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
         }
 
         try {
@@ -142,8 +140,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
-
-        LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 

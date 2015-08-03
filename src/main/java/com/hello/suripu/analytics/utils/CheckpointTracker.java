@@ -20,8 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CheckpointTracker {
-    public static final String CHECKPOINT_TRACK_TABLE_NAME = "kinesis_checkpoint_track";
-    public static final Integer CHECKPOINT_NUM_TRACKS = 24;
+    public static final Integer CHECKPOINT_NUM_TRACKS = 24; //TODO: Add track expiration
     public static final Long CHECKPOINT_TRACK_PERIOD = 60L;   // in minutes
     public static final String APP_SHARD_ATTRIBUTE_NAME = "app_shard";
     public static final String TIMESTAMP_ATTRIBUTE_NAME = "created_at";
@@ -34,11 +33,11 @@ public class CheckpointTracker {
     private Long lastCheckpointTimestamp;
     private final String tableName;
 
-    public CheckpointTracker(final AmazonDynamoDB dynamoDBClient, final String appName) {
+    public CheckpointTracker(final AmazonDynamoDB dynamoDBClient, final String appName, final String tableName) {
         this.dynamoDBClient = dynamoDBClient;
         this.appName = appName;
         this.lastCheckpointTimestamp = 0L;
-        this.tableName = CHECKPOINT_TRACK_TABLE_NAME;
+        this.tableName = tableName;
     }
 
     public void trackCheckpoint(final String shardId, final String sequenceNumber, final Long timestamp) {
@@ -68,9 +67,9 @@ public class CheckpointTracker {
             this.dynamoDBClient.putItem(putItemRequest);
             LOGGER.debug("Checkpoint tracked for {} at {}", appShardId, timestamp);
         } catch (AmazonServiceException var5) {
-            LOGGER.error("FW Upgrade Node insert failed. AWS service error: {}", var5.getMessage());
+            LOGGER.error("Checkpoint track insert failed. AWS service error: {}", var5.getMessage());
         } catch (AmazonClientException var6) {
-            LOGGER.error("FW Upgrade Node insert failed. Client error: {}", var6.getMessage());
+            LOGGER.error("Checkpoint track insert failed. Client error: {}", var6.getMessage());
         }
 
     }

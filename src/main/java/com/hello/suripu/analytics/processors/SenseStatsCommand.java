@@ -82,7 +82,11 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
                 configuration.getRedisConfiguration().getPort()
         );
 
-        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(jedisPool, checkpoinTrackerclient, configuration.getAppNames().get(COMMAND_APP_NAME));
+        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(
+                jedisPool,
+                checkpoinTrackerclient,
+                configuration.getAppNames().get(COMMAND_APP_NAME),
+                configuration.dynamoDBConfiguration().tables().get(CHECKPOINT_TABLE_NAME));
 
         final Worker kinesisWorker = new Worker(processorFactory, kinesisConfig);
         kinesisWorker.run();
