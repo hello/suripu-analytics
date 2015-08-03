@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 public class CheckpointTracker {
     public static final Integer CHECKPOINT_NUM_TRACKS = 24; //TODO: Add track expiration
-    public static final Long CHECKPOINT_TRACK_PERIOD = 60L;   // in minutes
+    public static final Long CHECKPOINT_TRACK_PERIOD = 5L;   // in minutes
     public static final String STREAM_SHARD_ATTRIBUTE_NAME = "stream_shardId";
     public static final String TIMESTAMP_ATTRIBUTE_NAME = "created_at";
     public static final String CHECKPOINT_ATTRIBUTE_NAME = "checkpoint";
