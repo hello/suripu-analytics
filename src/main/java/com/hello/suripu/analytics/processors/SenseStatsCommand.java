@@ -31,6 +31,7 @@ import redis.clients.jedis.JedisPool;
 public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConfiguration> {
     private final static String COMMAND_APP_NAME = "sense_stats";
     private final static String COMMAND_STREAM_NAME = "sense_sensors_data";
+    private final static String CHECKPOINT_TABLE_NAME = "kinesis_checkpoint_track";
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsCommand.class);
     private final static ClientConfiguration DEFAULT_CLIENT_CONFIGURATION = new ClientConfiguration().withConnectionTimeout(200).withMaxErrorRetry(1);
 
@@ -63,7 +64,7 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
         final AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
 
         final AmazonDynamoDB checkpoinTrackerclient = new AmazonDynamoDBClient(awsCredentialsProvider, DEFAULT_CLIENT_CONFIGURATION);
-        checkpoinTrackerclient.setEndpoint(configuration.dynamoDBConfiguration().endpoints().get("kinesis_checkpoint_track"));
+        checkpoinTrackerclient.setEndpoint(configuration.dynamoDBConfiguration().endpoints().get(CHECKPOINT_TABLE_NAME));
 
         final String workerId = InetAddress.getLocalHost().getCanonicalHostName();
         final KinesisClientLibConfiguration kinesisConfig = new KinesisClientLibConfiguration(
@@ -81,7 +82,7 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
                 configuration.getRedisConfiguration().getPort()
         );
 
-        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(jedisPool);
+        final IRecordProcessorFactory processorFactory = new SenseStatsProcessorFactory(jedisPool, checkpoinTrackerclient, configuration.getAppNames().get(COMMAND_APP_NAME));
 
         final Worker kinesisWorker = new Worker(processorFactory, kinesisConfig);
         kinesisWorker.run();
