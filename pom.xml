@@ -17,6 +17,7 @@
     <protobuf.version>2.5.0</protobuf.version>
     <jodatime.version>20150319</jodatime.version>
     <jackson.version>1.8.9</jackson.version>
+    <suripu.version>0.4.63</suripu.version>
   </properties>
 
   <repositories>
@@ -62,12 +63,17 @@
     <dependency>
       <groupId>com.hello.suripu</groupId>
       <artifactId>suripu-core</artifactId>
-      <version>0.4.48</version>
+      <version>${suripu.version}</version>
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
       <artifactId>suripu-api</artifactId>
-      <version>0.4.48</version>
+      <version>${suripu.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hello.suripu</groupId>
+      <artifactId>suripu-coredw</artifactId>
+      <version>${suripu.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

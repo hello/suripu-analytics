@@ -12,6 +12,7 @@ import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
+import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
@@ -35,6 +36,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final static Long LOW_UPTIME_THRESHOLD = 3600L; //seconds
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final CheckpointTracker checkpointTracker;
     private final Meter messagesProcessed;
     private final Meter waveCounts;
     private final Meter lowUptimeCount;
@@ -42,12 +44,12 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private Long lastFilterTimestamp;
     private String shardId = "No Lease Key";
 
-    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
-
+    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
         this.messagesProcessed = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
         this.waveCounts = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "waves", "wave-counts", TimeUnit.SECONDS);
         this.lowUptimeCount = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "lowuptime", "low-uptime", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
+        this.checkpointTracker = checkpointTracker;
     }
 
     public void initialize(String shardId) {
@@ -72,7 +74,10 @@ public class SenseStatsProcessor implements IRecordProcessor {
         }
 
         for(final Record record : records) {
+
+            final String sequenceNumber = record.getSequenceNumber();
             DataInputProtos.BatchPeriodicDataWorker batchPeriodicDataWorker;
+
             try {
                 batchPeriodicDataWorker = DataInputProtos.BatchPeriodicDataWorker.parseFrom(record.getData().array());
             } catch (InvalidProtocolBufferException e) {
@@ -104,6 +109,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 waveCountSum += waveCount;
 
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
+
+                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
+                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
+                }
+
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
@@ -120,8 +130,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 final Long timeStamp = mapEntry.getValue();
                 seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, deviceName, timeStamp));
             }
-
-            LOGGER.debug("Processed record for: {} with time: {}", deviceName, batchPeriodicDataWorker.getReceivedAt());
         }
 
         try {
@@ -132,7 +140,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
             LOGGER.error("Received shutdown command at checkpoint, bailing. {}", e.getMessage());
         }
 
-        //LOGGER.info("Shard Id: {} Last Checkpoint: , Millis behind present: ", shardId);
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
 

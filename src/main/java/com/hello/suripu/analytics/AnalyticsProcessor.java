@@ -1,5 +1,6 @@
 package com.hello.suripu.analytics;
 
+import com.hello.suripu.analytics.cli.CreateDynamoDBTables;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.processors.PillStatsCommand;
 import com.hello.suripu.analytics.processors.SenseStatsCommand;
@@ -33,6 +34,7 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
     public void initialize(Bootstrap<AnalyticsConfiguration> bootstrap) {
         bootstrap.addCommand(new SenseStatsCommand("sense_stats", "Analyzing incoming sense data."));
         bootstrap.addCommand(new PillStatsCommand("pill_stats", "Analyzing incoming pill data."));
+        bootstrap.addCommand(new CreateDynamoDBTables());
     }
 
     @Override

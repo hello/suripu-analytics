@@ -3,8 +3,8 @@ package com.hello.suripu.analytics.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.google.common.collect.ImmutableMap;
-import com.hello.suripu.core.configuration.GraphiteConfiguration;
-import com.hello.suripu.core.configuration.RedisConfiguration;
+import com.hello.suripu.coredw.configuration.GraphiteConfiguration;
+import com.hello.suripu.coredw.configuration.RedisConfiguration;
 import io.dropwizard.Configuration;
 import java.util.Map;
 import javax.validation.Valid;

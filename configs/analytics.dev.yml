@@ -16,9 +16,11 @@ dynamodb:
   tables:
     alarm_info: alarm_info
     sense_last_seen : sense_last_seen
+    kinesis_checkpoint_track : kinesis_checkpoint_track
   endpoints:
     alarm_info: http://dynamodb.us-east-1.amazonaws.com
     sense_last_seen : http://localhost:7777
+    kinesis_checkpoint_track : http://localhost:7777
 
 graphite:
   host: carbon.hostedgraphite.com
