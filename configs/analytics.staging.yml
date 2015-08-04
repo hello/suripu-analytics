@@ -1,7 +1,7 @@
 --- 
 app_names:
-  pill_stats: AnalyticsPillProcessorProd
-  sense_stats: AnalyticsSenseProcessorProd
+  pill_stats: AnalyticsPillProcessor
+  sense_stats: AnalyticsSenseProcessor
 debug: false
 kinesis:
   endpoints:
@@ -14,9 +14,9 @@ kinesis:
 dynamodb:
   region: us-east-1
   tables:
-    alarm_info: prod_alarm_info
-    sense_last_seen : prod_sense_last_seen
-    kinesis_checkpoint_track : prod_kinesis_checkpoint_track
+    alarm_info: alarm_info
+    sense_last_seen : sense_last_seen
+    kinesis_checkpoint_track : kinesis_checkpoint_track
   endpoints:
     alarm_info: http://dynamodb.us-east-1.amazonaws.com
     sense_last_seen : http://dynamodb.us-east-1.amazonaws.com
@@ -37,7 +37,7 @@ logging:
 
 max_records: 1000
 
-metrics_enabled: true
+metrics_enabled: false
 
 redis: 
   host: stats.xoe7je.0001.use1.cache.amazonaws.com
