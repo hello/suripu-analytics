@@ -1,0 +1,21 @@
+language: java
+sudo: false
+install: mvn --version
+script: mvn --settings settings.xml clean -DskipITs deploy -q
+branches:
+  only:
+  - master
+notifications:
+  email:
+  - tim+travis-suripu@sayhello.com
+  hipchat:
+    rooms:
+    - mDwGqxGUPFlLf8CBEWGs9JPzZBmhJiQahoaHmlns@ops
+    template:
+    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
+jdk:
+- oraclejdk7
+env:
+  global:
+  - secure: DkJvY7MgQRQ8SvHM3NN2aKEFjtrmUQrN5yLwGteERLFA9jtkmesbmokmukIczPvrtxtP4gFBxWz2v/rC7jWhq4+i4Ph0VJiPsM0Yg6RArAGBSQAwkgsWf1yUn6FAGQKCOBWjed49AGo4Yk0QgOUUfEZ8TRM1iLrctUzJmHebohkFyqc4o3eI9Ze7TgZ6lnfYHRAn74oXgqMVWPtRdb4oDtH68Y2YqNanAOPb8ZhaVn0qxV9PamH0AmwfiT/2UsTg80odqUhST32/+oV4LTQBkuXfBiHyfyFt5xTZ0M24d8IPC6422Od26ntbL+2RVy2bxP6zOhJaNxURsLtVYx2Dx1b1nlHANGk1IC4uPMcmUht/HNaTRcXBuiQhoe24eRnMghniv4QfaSOYtIG5LtN+m1ZMjw8NXfXolhUreNAH31U1Dx1Kp6qfEya0kZLX9LVHMS4VzCRF6TW/MpUnYHC1JYj8HeumyRBPsUp8c0GwHibw5yFIjGcrEyeU1JLHm1MmDp+3d5KkgYVyPujrrMAlzyzlk1A0H4cQj/4aSBKPbIAgYK5oWtY8AW/7chw+gNAA90VEI5FJJU4FgoC+6r3wRvQDsUY3dN6rQM89nt+I05mhI5iyPLS2Hy3Vmf6B/mNK8pU3vcyRXZkRsxw5sMGHhAYMoeVkkvxegdO0XCrBC8c=
+  - secure: eHhFwmTgquPwslXnqfoJZG/RMihhsADWtsehS0sHgbxeqfmiFpm415ZRUIYQ8juGSCNgnEVCdqLRaSrrCxi6fI6a0iuwkw7yihweZ1MRrR8wlHa8371UuHGL4W3+HZrbK7029CtPR2ILbxs2baZbg1pWBSgZZsRTiVBpLC7+Jet+fnNzeAk6YqnzrVzDSlb7FqagFsgjRW9XBK7GxIrjDd5mSkM2HmQGLvESx+eBDoSDkNbKwdTu/aL7kNw852rvZi9ryD7z9ije1m3iB7Hp0LT7fCsvPDeYomnLBUX+10Mmg4gChsr3ei25YmFhtC89fFCtOCdPQsV752l8Itedo4vbqoAAQjZqn2tWkJUI4z8vtfjtPOdv9PqJB/+h1j4jonNZkn8DGpm163NvybL6nTFnjJhvyD5tOU3mvOUfWOaHPs71fiekzYKLFxGbLEjhI+bbz47BLJxHZqJhePox9jm0yh/DlMiFrFFv+RzOhK+4iT8ZiDsxmtQRdIQgPVhgyUsKZ/UJjWZBF2fafeXUjNNftoBZVnGMnifnZhp9g98+b6o145sFPWyYJ+CFQuM/OkMm/CdFWSepViyOz6qzEsAiLg7gLbqNWdwPDN/l2MFtfTPDxwI+AkMELRZzemZcnLaBdOj3EVTeG9XgUbMsK2wOBQ9cjmuxS2IUDgOJmU4=

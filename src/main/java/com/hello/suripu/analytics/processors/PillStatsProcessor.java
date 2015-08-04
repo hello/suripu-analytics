@@ -10,6 +10,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
+import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.ble.SenseCommandProtos;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
@@ -27,13 +28,15 @@ public class PillStatsProcessor implements IRecordProcessor {
     private final static Logger LOGGER = LoggerFactory.getLogger(PillStatsProcessor.class);
 
     private final ActiveDevicesTracker activeDevicesTracker;
+    private final CheckpointTracker checkpointTracker;
     private final Meter messagesProcessed;
     private String shardId = "No Lease Key";
 
-    public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker){
+    public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
 
         this.messagesProcessed = Metrics.defaultRegistry().newMeter(PillStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
+        this.checkpointTracker = checkpointTracker;
     }
 
     public void initialize(String shardId) {
@@ -46,12 +49,18 @@ public class PillStatsProcessor implements IRecordProcessor {
         final Map<String, Long> activePills = Maps.newHashMap();
 
         for(final Record record : records) {
+            final String sequenceNumber = record.getSequenceNumber();
+
             try {
                 final SenseCommandProtos.batched_pill_data batched_pill_data = SenseCommandProtos.batched_pill_data.parseFrom(record.getData().array());
                 for (final SenseCommandProtos.pill_data data : batched_pill_data.getPillsList()) {
 
                     final Long pillTs = data.getTimestamp() * 1000L;
                     activePills.put(data.getDeviceId(), pillTs);
+
+                    if (checkpointTracker.isEligibleForTracking(pillTs)) {
+                        checkpointTracker.trackCheckpoint(shardId, sequenceNumber, pillTs);
+                    }
                 }
             } catch (InvalidProtocolBufferException e) {
                 LOGGER.error("Failed to decode protobuf: {}", e.getMessage());
