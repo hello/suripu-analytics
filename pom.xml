@@ -79,6 +79,12 @@
       <groupId>com.hello.suripu</groupId>
       <artifactId>suripu-core</artifactId>
       <version>${suripu.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>suripu-jodatime</artifactId>
+          <groupId>suripu-jodatime</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
