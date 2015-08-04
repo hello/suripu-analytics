@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.hello.analytics</groupId>
   <artifactId>suripu-analytics</artifactId>
-  <version>0.2</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>suripu-analytics</name>
@@ -19,6 +18,13 @@
     <jackson.version>1.8.9</jackson.version>
     <suripu.version>0.4.63</suripu.version>
   </properties>
+
+  <scm>
+    <connection>scm:git:git://github.com/hello/suripu-analytics.git</connection>
+    <developerConnection>scm:git:git@github.com:hello/suripu-analytics.git</developerConnection>
+    <url>http://github.com/hello/suripu-analytics</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <distributionManagement>
     <site>
@@ -151,7 +157,7 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>com.hello.suripu.analytics.AnalyticsProcessor</mainClass>
                 </transformer>
