@@ -37,6 +37,11 @@
 
   <repositories>
     <repository>
+      <id>project.local</id>
+      <name>project</name>
+      <url>file:${project.basedir}/repo</url>
+    </repository>
+    <repository>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
@@ -79,12 +84,6 @@
       <groupId>com.hello.suripu</groupId>
       <artifactId>suripu-core</artifactId>
       <version>${suripu.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>suripu-jodatime</artifactId>
-          <groupId>suripu-jodatime</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
