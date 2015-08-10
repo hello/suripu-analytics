@@ -65,7 +65,7 @@ public class AnalyticsConfiguration extends Configuration {
 
     @Valid
     @NotNull
-    @Max(1000)
+    @Max(2500)
     @JsonProperty("max_records")
     private Integer maxRecords;
 
