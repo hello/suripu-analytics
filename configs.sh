@@ -8,6 +8,6 @@ fi
 
 VERSION=$1
 
-s3cmd put configs/analytics.prod.yml s3://hello-deploy/configs/com/hello/suripu/suripu-analytics/$VERSION/analytics.prod.yml
-s3cmd put configs/analytics.staging.yml s3://hello-deploy/configs/com/hello/suripu/suripu-analytics/$VERSION/analytics.staging.yml
+s3cmd put configs/analytics.prod.yml s3://hello-deploy/configs/com/hello/analytics/suripu-analytics/$VERSION/analytics.prod.yml
+s3cmd put configs/analytics.staging.yml s3://hello-deploy/configs/com/hello/analytics/suripu-analytics/$VERSION/analytics.staging.yml
 
