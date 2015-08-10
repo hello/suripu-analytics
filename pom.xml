@@ -3,7 +3,7 @@
 
   <groupId>com.hello.analytics</groupId>
   <artifactId>suripu-analytics</artifactId>
-  <version>0.7-SNAPSHOT</version>
+  <version>0.7</version>
   <packaging>jar</packaging>
 
   <name>suripu-analytics</name>
@@ -23,7 +23,7 @@
     <connection>scm:git:git://github.com/hello/suripu-analytics.git</connection>
     <developerConnection>scm:git:git@github.com:hello/suripu-analytics.git</developerConnection>
     <url>http://github.com/hello/suripu-analytics</url>
-    <tag>HEAD</tag>
+    <tag>suripu-analytics-0.7</tag>
   </scm>
 
   <distributionManagement>
