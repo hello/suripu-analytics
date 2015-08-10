@@ -74,7 +74,7 @@ public class PillStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConfi
         kinesisConfig.withInitialPositionInStream(InitialPositionInStream.LATEST);
         kinesisConfig.withMaxRecords(configuration.getMaxRecords());
         kinesisConfig.withKinesisEndpoint(configuration.getKinesisEndpoints().get(COMMAND_STREAM_NAME));
-        kinesisConfig.withIdleTimeBetweenReadsInMillis(20000);
+        kinesisConfig.withIdleTimeBetweenReadsInMillis(10000);
 
         final JedisPool jedisPool = new JedisPool(
                 configuration.getRedisConfiguration().getHost(),
