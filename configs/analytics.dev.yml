@@ -37,7 +37,7 @@ logging:
 
 max_records: 1000
 
-metrics_enabled: true
+metrics_enabled: false
 
 redis:
   host: localhost
