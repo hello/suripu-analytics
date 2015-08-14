@@ -12,10 +12,8 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
-import com.google.common.base.Joiner;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
-import com.hello.suripu.core.metrics.RegexMetricPredicate;
 import io.dropwizard.setup.Environment;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
@@ -24,7 +22,6 @@ import redis.clients.jedis.JedisPool;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,20 +49,15 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
             final String env = (configuration.getDebug()) ? "dev" : "prod";
             final String prefix = String.format("%s.%s.suripu-analytics", apiKey, env);
 
-            final List<String> metrics = configuration.getGraphite().getIncludeMetrics();
-            final RegexMetricPredicate predicate = new RegexMetricPredicate(metrics);
-            final Joiner joiner = Joiner.on(", ");
-            LOGGER.info("Logging the following metrics: {}", joiner.join(metrics));
-
             final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHostName, 2003));
 
             final GraphiteReporter reporter = GraphiteReporter.forRegistry(environment.metrics())
-                    .prefixedWith("web1.example.com")
+                    .prefixedWith(prefix)
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
                     .filter(MetricFilter.ALL)
                     .build(graphite);
-            reporter.start(1, TimeUnit.MINUTES);
+            reporter.start(interval, TimeUnit.SECONDS);
 
             LOGGER.info("Metrics enabled.");
         } else {

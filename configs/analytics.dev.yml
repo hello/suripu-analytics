@@ -8,8 +8,8 @@ kinesis:
     sense_sensors_data: https://kinesis.us-east-1.amazonaws.com
     batch_pill_data: https://kinesis.us-east-1.amazonaws.com
   streams:
-    sense_sensors_data: sense_sensors_data
-    batch_pill_data: batch_pill_data
+    sense_sensors_data: dev_sense_sensors_data
+    batch_pill_data: dev_batch_pill_data
 
 dynamodb:
   region: us-east-1
@@ -37,7 +37,7 @@ logging:
 
 max_records: 1000
 
-metrics_enabled: false
+metrics_enabled: true
 
 redis:
   host: localhost
