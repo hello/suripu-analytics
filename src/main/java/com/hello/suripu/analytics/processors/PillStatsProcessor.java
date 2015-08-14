@@ -6,19 +6,21 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
 import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.ble.SenseCommandProtos;
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Created by jnorgan on 6/29/15.
@@ -26,15 +28,13 @@ import org.slf4j.LoggerFactory;
 public class PillStatsProcessor implements IRecordProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(PillStatsProcessor.class);
-
+    static final MetricRegistry metrics = new MetricRegistry();
     private final ActiveDevicesTracker activeDevicesTracker;
     private final CheckpointTracker checkpointTracker;
-    private final Meter messagesProcessed;
+    private final Meter messagesProcessed = metrics.meter(name(PillStatsProcessor.class, "messages-processed"));
     private String shardId = "No Lease Key";
 
     public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
-
-        this.messagesProcessed = Metrics.defaultRegistry().newMeter(PillStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
     }

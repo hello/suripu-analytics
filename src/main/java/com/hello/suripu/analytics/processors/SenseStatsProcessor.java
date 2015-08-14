@@ -6,7 +6,9 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
 import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
-import com.codahale.metrics.annotation.Timed;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Maps;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -16,38 +18,38 @@ import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 import com.hello.suripu.core.processors.OTAProcessor;
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Created by jnorgan on 6/29/15.
  */
 public class SenseStatsProcessor implements IRecordProcessor {
 
+    static final MetricRegistry metrics = new MetricRegistry();
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
     private final static Long LOW_UPTIME_THRESHOLD = 3600L; //seconds
 
     private final ActiveDevicesTracker activeDevicesTracker;
     private final CheckpointTracker checkpointTracker;
-    private final Meter messagesProcessed;
-    private final Meter waveCounts;
-    private final Meter lowUptimeCount;
+    private final Meter messagesProcessed = metrics.meter(name(SenseStatsProcessor.class, "messages-processed"));
+    private final Meter waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
+    private final Meter lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
+    private final Histogram uptimeDays = metrics.histogram(name(SenseStatsProcessor.class, "uptime-days"));
     private BloomFilter<CharSequence> bloomFilter;
     private Long lastFilterTimestamp;
     private String shardId = "No Lease Key";
 
     public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
-        this.messagesProcessed = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "messages", "messages-processed", TimeUnit.SECONDS);
-        this.waveCounts = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "waves", "wave-counts", TimeUnit.SECONDS);
-        this.lowUptimeCount = Metrics.defaultRegistry().newMeter(SenseStatsProcessor.class, "lowuptime", "low-uptime", TimeUnit.SECONDS);
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
     }
@@ -62,7 +64,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
         this.lastFilterTimestamp = DateTime.now().getMillis();
     }
 
-    @Timed
     public void processRecords(List<Record> records, IRecordProcessorCheckpointer iRecordProcessorCheckpointer) {
 
         final Map<String, Long> activeSenses = Maps.newHashMap();
@@ -90,10 +91,13 @@ public class SenseStatsProcessor implements IRecordProcessor {
             final String deviceIPAddress = batchPeriodicDataWorker.getIpAddress();
             final Integer deviceUptime = batchPeriodicDataWorker.getUptimeInSecond();
 
+            int days = Days.daysBetween(DateTime.now(DateTimeZone.UTC), DateTime.now(DateTimeZone.UTC).minusSeconds(deviceUptime)).getDays();
+
             if (deviceUptime <= LOW_UPTIME_THRESHOLD) {
                 if(!bloomFilter.mightContain(deviceName)) {
                     bloomFilter.put(deviceName);
                     lowUptimeCount.mark(1);
+                    uptimeDays.update(days);
                 }
 
             }

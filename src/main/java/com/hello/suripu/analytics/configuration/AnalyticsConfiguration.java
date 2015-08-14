@@ -1,15 +1,13 @@
 package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.google.common.collect.ImmutableMap;
-import com.hello.suripu.coredw.configuration.GraphiteConfiguration;
-import com.hello.suripu.coredw.configuration.RedisConfiguration;
 import io.dropwizard.Configuration;
-import java.util.Map;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * Created by jnorgan on 6/29/15.
