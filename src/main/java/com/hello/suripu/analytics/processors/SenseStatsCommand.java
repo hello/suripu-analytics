@@ -9,21 +9,23 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
 import com.google.common.base.Joiner;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
-
 import com.hello.suripu.core.metrics.RegexMetricPredicate;
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.reporting.GraphiteReporter;
 import io.dropwizard.setup.Environment;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPool;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jnorgan on 6/29/15.
@@ -54,7 +56,16 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
             final RegexMetricPredicate predicate = new RegexMetricPredicate(metrics);
             final Joiner joiner = Joiner.on(", ");
             LOGGER.info("Logging the following metrics: {}", joiner.join(metrics));
-            GraphiteReporter.enable(Metrics.defaultRegistry(), interval, TimeUnit.SECONDS, graphiteHostName, 2003, prefix, predicate);
+
+            final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHostName, 2003));
+
+            final GraphiteReporter reporter = GraphiteReporter.forRegistry(environment.metrics())
+                    .prefixedWith("web1.example.com")
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .filter(MetricFilter.ALL)
+                    .build(graphite);
+            reporter.start(1, TimeUnit.MINUTES);
 
             LOGGER.info("Metrics enabled.");
         } else {
