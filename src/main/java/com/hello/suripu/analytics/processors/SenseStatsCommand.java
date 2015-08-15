@@ -89,7 +89,9 @@ public class SenseStatsCommand extends AnalyticsEnvironmentCommand<AnalyticsConf
                 jedisPool,
                 checkpoinTrackerclient,
                 configuration.getKinesisStreams().get(COMMAND_STREAM_NAME),
-                configuration.dynamoDBConfiguration().tables().get(CHECKPOINT_TABLE_NAME));
+                configuration.dynamoDBConfiguration().tables().get(CHECKPOINT_TABLE_NAME),
+                environment.metrics()
+        );
 
         final Worker kinesisWorker = new Worker(processorFactory, kinesisConfig);
         kinesisWorker.run();

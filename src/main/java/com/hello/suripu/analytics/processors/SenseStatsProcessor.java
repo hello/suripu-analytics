@@ -35,23 +35,28 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class SenseStatsProcessor implements IRecordProcessor {
 
-    static final MetricRegistry metrics = new MetricRegistry();
+    private final MetricRegistry metrics;
     private final static Logger LOGGER = LoggerFactory.getLogger(SenseStatsProcessor.class);
     private final static Long LOW_UPTIME_THRESHOLD = 3600L; //seconds
 
     private final ActiveDevicesTracker activeDevicesTracker;
     private final CheckpointTracker checkpointTracker;
-    private final Meter messagesProcessed = metrics.meter(name(SenseStatsProcessor.class, "messages-processed"));
-    private final Meter waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
-    private final Meter lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
-    private final Histogram uptimeDays = metrics.histogram(name(SenseStatsProcessor.class, "uptime-days"));
+    private final Meter messagesProcessed;
+    private final Meter waveCounts;
+    private final Meter lowUptimeCount;
+    private final Histogram uptimeDays;
     private BloomFilter<CharSequence> bloomFilter;
     private Long lastFilterTimestamp;
     private String shardId = "No Lease Key";
 
-    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
+    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker, final MetricRegistry metricRegistry){
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
+        this.metrics= metricRegistry;
+        messagesProcessed = metrics.meter(name(SenseStatsProcessor.class, "messages-processed"));
+        waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
+        lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
+        uptimeDays = metrics.histogram(name(SenseStatsProcessor.class, "uptime-days"));
     }
 
     public void initialize(String shardId) {

@@ -28,15 +28,17 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class PillStatsProcessor implements IRecordProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(PillStatsProcessor.class);
-    static final MetricRegistry metrics = new MetricRegistry();
+    final MetricRegistry metrics;
     private final ActiveDevicesTracker activeDevicesTracker;
     private final CheckpointTracker checkpointTracker;
-    private final Meter messagesProcessed = metrics.meter(name(PillStatsProcessor.class, "messages-processed"));
+    private final Meter messagesProcessed;
     private String shardId = "No Lease Key";
 
-    public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker){
+    public PillStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker, final MetricRegistry metricRegistry){
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
+        this.metrics = metricRegistry;
+        this.messagesProcessed = metrics.meter(name(PillStatsProcessor.class, "messages-processed"));
     }
 
     public void initialize(String shardId) {
