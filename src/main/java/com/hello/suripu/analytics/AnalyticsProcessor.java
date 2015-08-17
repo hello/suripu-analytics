@@ -7,8 +7,9 @@ import com.hello.suripu.analytics.processors.SenseStatsCommand;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import java.util.TimeZone;
 import org.joda.time.DateTimeZone;
+
+import java.util.TimeZone;
 
 /**
  * A dropwizard application that essentially mimics the same/similar structure as the
@@ -40,6 +41,6 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
     @Override
     public void run(AnalyticsConfiguration configuration,
                     Environment environment) {
-        // Nothing to see here
+        // DO NOTHING HERE
     }
 }

@@ -17,14 +17,13 @@ import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
-import com.hello.suripu.core.processors.OTAProcessor;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
     }
 
     private void createNewBloomFilter() {
-        bloomFilter = BloomFilter.create(Funnels.stringFunnel(), 20000, 0.03);
+        bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), 20000, 0.03);
         this.lastFilterTimestamp = DateTime.now().getMillis();
     }
 
@@ -108,9 +107,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             }
 
             //Filter out PCH IPs from active sense tracking
-            if (!OTAProcessor.isPCH(deviceIPAddress, Collections.EMPTY_LIST)) {
-                activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
-            }
+            activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
 
             final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
             for(final DataInputProtos.periodic_data periodicData : batchPeriodicDataWorker.getData().getDataList()) {

@@ -2,6 +2,7 @@ package com.hello.suripu.analytics.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import io.dropwizard.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
@@ -10,7 +11,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class GraphiteConfiguration {
+public class GraphiteConfiguration extends Configuration {
     @Valid
     @NotNull
     @JsonProperty("host")
