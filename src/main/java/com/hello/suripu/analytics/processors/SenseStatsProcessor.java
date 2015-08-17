@@ -101,10 +101,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 if(!bloomFilter.mightContain(deviceName)) {
                     bloomFilter.put(deviceName);
                     lowUptimeCount.mark(1);
-                    uptimeDays.update(days);
                 }
 
             }
+
+            uptimeDays.update(days);
 
             //Filter out PCH IPs from active sense tracking
             activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
