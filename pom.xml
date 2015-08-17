@@ -12,12 +12,14 @@
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <dropwizard.version>0.8.2</dropwizard.version>
+      <metrics.version>3.1.2</metrics.version>
       <aws.sdk.version>1.9.37</aws.sdk.version>
       <protobuf.version>2.5.0</protobuf.version>
       <jodatime.version>20150319</jodatime.version>
       <jackson.version>1.8.9</jackson.version>
-      <suripu.version>0.4.63</suripu.version>
+      <suripu.version>0.5.7</suripu.version>
       <java.version>1.7</java.version>
+      <jersey.version>2.19</jersey.version>
   </properties>
 
   <scm>
@@ -78,7 +80,12 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
+      <dependency>
+          <groupId>io.dropwizard</groupId>
+          <artifactId>dropwizard-metrics-graphite</artifactId>
+          <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
       <version>1.6.0</version>
@@ -87,16 +94,6 @@
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
       <version>2.6.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-core</artifactId>
-      <version>3.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-graphite</artifactId>
-      <version>3.1.0</version>
     </dependency>
     <dependency>
       <groupId>suripu-jodatime</groupId>
@@ -108,13 +105,13 @@
       <artifactId>suripu-core</artifactId>
       <version>${suripu.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>com.hello.suripu</groupId>
+            <artifactId>suripu-algorithm</artifactId>
+          </exclusion>
             <exclusion>
-                <groupId>com.yammer.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>com.yammer.metrics</groupId>
-                <artifactId>metrics-graphite</artifactId>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
             </exclusion>
         </exclusions>
     </dependency>
@@ -128,16 +125,48 @@
       <!--<artifactId>suripu-coredw</artifactId>-->
       <!--<version>${suripu.version}</version>-->
     <!--</dependency>-->
-    <!--<dependency>-->
-      <!--<groupId>com.google.guava</groupId>-->
-      <!--<artifactId>guava</artifactId>-->
-      <!--<version>[14.0.1]</version>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-      <!--<groupId>com.google.protobuf</groupId>-->
-      <!--<artifactId>protobuf-java</artifactId>-->
-      <!--<version>2.5.0</version>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>18.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.5.0</version>
+    </dependency>
+      <dependency>
+          <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+          <artifactId>jersey-test-framework-provider-inmemory</artifactId>
+          <version>${jersey.version}</version>
+          <scope>test</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>junit</groupId>
+                  <artifactId>junit</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+          <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+          <version>${jersey.version}</version>
+          <scope>test</scope>
+          <exclusions>
+              <exclusion>
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>junit</groupId>
+                  <artifactId>junit</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
   </dependencies>
   <build>
     <extensions>
