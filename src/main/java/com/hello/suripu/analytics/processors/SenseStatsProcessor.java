@@ -95,7 +95,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             final String deviceIPAddress = batchPeriodicDataWorker.getIpAddress();
             final Integer deviceUptime = batchPeriodicDataWorker.getUptimeInSecond();
 
-            int days = Days.daysBetween(DateTime.now(DateTimeZone.UTC), DateTime.now(DateTimeZone.UTC).minusSeconds(deviceUptime)).getDays();
+            int days = Days.daysBetween(DateTime.now(DateTimeZone.UTC).minusSeconds(deviceUptime), DateTime.now(DateTimeZone.UTC)).getDays();
 
             if (deviceUptime <= LOW_UPTIME_THRESHOLD) {
                 if(!bloomFilter.mightContain(deviceName)) {
