@@ -15,7 +15,7 @@ deploy:
   bucket: "hello-deploy"
   skip_cleanup: true
   local_dir: deploy-configs
-  upload-dir: "/configs/com/hello/analytics/suripu-analytics/$BUILD_NUMBER/"
+  upload-dir: /configs/com/hello/analytics/suripu-analytics/$BUILD_NUMBER
   on:
     tags: false
     all_branches: true
