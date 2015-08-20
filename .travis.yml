@@ -12,7 +12,7 @@ deploy:
   provider: s3
   access_key_id: $CI_DEPLOY_USERNAME
   secret_access_key: $CI_DEPLOY_PASSWORD
-  bucket: "hello-deploy"
+  bucket: hello-deploy
   skip_cleanup: true
   local_dir: deploy-configs
   upload-dir: configs/com/hello/analytics/suripu-analytics/$BUILD_NUMBER
