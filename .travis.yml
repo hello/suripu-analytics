@@ -3,18 +3,28 @@ sudo: false
 install: mvn --version
 script:
   - mvn versions:set -DnewVersion=$BUILD_NUMBER
+  - mvn versions:commit
   - mvn --settings settings.xml clean -DskipITs deploy -q
+  - mkdir deploy-configs
+  - cp ./configs/*.prod.yml ./deploy-configs/
+  - cp ./configs/*.staging.yml ./deploy-configs/
+deploy:
+  provider: s3
+  access_key_id: $CI_DEPLOY_USERNAME
+  secret_access_key: $CI_DEPLOY_PASSWORD
+  bucket: "hello-deploy"
+  skip_cleanup: true
+  local_dir: deploy-configs
+  upload-dir: "configs/com/hello/analytics/suripu-analytics/$BUILD_NUMBER/"
+  on:
+    tags: false
+    all_branches: true
 branches:
   only:
-  - master
+  - PRODUCTION
 notifications:
   email:
-  - tim+travis-suripu@sayhello.com
-  hipchat:
-    rooms:
-    - mDwGqxGUPFlLf8CBEWGs9JPzZBmhJiQahoaHmlns@ops
-    template:
-    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
+  - josef+travis-suripu@sayhello.com
 jdk:
 - oraclejdk7
 env:
