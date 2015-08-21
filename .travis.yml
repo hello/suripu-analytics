@@ -8,10 +8,9 @@ script:
 - mkdir deploy-configs
 - cp ./configs/*.yml ./deploy-configs/
 after_success:
-# CREATE GIT TAG
 - git config --global user.email "builds@travis-ci.com"
 - git config --global user.name "Travis CI"
-- export GIT_TAG=build-$TRAVIS_BRANCH-$BUILD_NUMBER
+- export GIT_TAG=suripu-analytics-$TRAVIS_BRANCH-$BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
 - git push --quiet https://$GIT_API_TOKEN@github.com/hello/suripu-analytics.git $GIT_TAG > /dev/null 2>&1
 deploy:
