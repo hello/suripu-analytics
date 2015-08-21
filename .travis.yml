@@ -16,6 +16,7 @@ deploy:
   skip_cleanup: true
   local_dir: deploy-configs
   upload-dir: configs/com/hello/analytics/suripu-analytics/
+  region: "us-east-1"
   on:
     tags: false
     all_branches: true
