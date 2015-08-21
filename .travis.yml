@@ -15,7 +15,7 @@ after_success:
 - git push --quiet git@github.com:hello/suripu-analytics.git --tags
 - git checkout master
 - git merge PRODUCTION
-- git push --quiet git@github.com:hello/suripu-analytics.git
+- git push --quiet git@github.com:hello/suripu-analytics.git master
 deploy:
   provider: s3
   access_key_id: $CI_DEPLOY_USERNAME
