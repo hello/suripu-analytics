@@ -13,10 +13,6 @@ after_success:
 - export GIT_TAG=suripu-analytics-$TRAVIS_BRANCH-$BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
 - git push --quiet git@github.com:hello/suripu-analytics.git --tags
-- git pull
-- git checkout origin/master
-- git merge PRODUCTION
-- git push origin master
 deploy:
   provider: s3
   access_key_id: $CI_DEPLOY_USERNAME
