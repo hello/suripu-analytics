@@ -25,7 +25,7 @@ branches:
   - PRODUCTION
 notifications:
   email:
-  - josef+travis-suripu@sayhello.com
+  - josef+travis-suripu2@sayhello.com
 jdk:
 - oraclejdk7
 env:
