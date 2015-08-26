@@ -2,6 +2,8 @@ language: java
 sudo: false
 install: mvn --version
 script:
+- mkdir src/main/resources
+- cp configs/analytics.prod.yml src/main/resources/boxfuse.yml
 - mvn versions:set -DnewVersion=$BUILD_NUMBER
 - mvn versions:commit
 - mvn --settings settings.xml clean -DskipITs deploy -q
