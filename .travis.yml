@@ -1,5 +1,4 @@
 language: java
-sudo: false
 install: mvn --version
 script:
 - export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
@@ -35,7 +34,7 @@ notifications:
   email:
   - josef+travis-suripu2@sayhello.com
 jdk:
-- oraclejdk8
+- oraclejdk7
 env:
   global:
   - BUILD_NUMBER=0.1.$TRAVIS_BUILD_NUMBER
