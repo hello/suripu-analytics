@@ -2,7 +2,6 @@ language: java
 sudo: true
 install: mvn --version
 script:
-- sudo rm /etc/mavenrc
 - export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
 - mkdir src/main/resources
 - cp configs/analytics.prod.yml src/main/resources/boxfuse.yml
