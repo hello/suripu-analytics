@@ -2,6 +2,8 @@ language: java
 sudo: false
 install: mvn --version
 script:
+- sudo rm /etc/mavenrc
+- export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 - mkdir src/main/resources
 - cp configs/analytics.prod.yml src/main/resources/boxfuse.yml
 - mvn versions:set -DnewVersion=$BUILD_NUMBER
