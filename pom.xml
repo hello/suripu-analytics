@@ -281,26 +281,6 @@
             <phase>package</phase>
           </execution>
           <execution>
-            <id>run-on-test</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>pre-integration-test</phase>
-            <configuration>
-              <env>test</env>
-            </configuration>
-          </execution>
-          <execution>
-            <id>kill-on-test</id>
-            <goals>
-              <goal>kill</goal>
-            </goals>
-            <phase>post-integration-test</phase>
-            <configuration>
-              <env>test</env>
-            </configuration>
-          </execution>
-          <execution>
             <id>run-on-prod</id>
             <goals>
               <goal>convert</goal>

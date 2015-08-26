@@ -35,7 +35,7 @@ notifications:
   email:
   - josef+travis-suripu2@sayhello.com
 jdk:
-- oraclejdk7
+- oraclejdk8
 env:
   global:
   - BUILD_NUMBER=0.1.$TRAVIS_BUILD_NUMBER
