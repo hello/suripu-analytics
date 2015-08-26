@@ -1,5 +1,5 @@
 language: java
-sudo: true
+sudo: false
 install: mvn --version
 script:
 - export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
