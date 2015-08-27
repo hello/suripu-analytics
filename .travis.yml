@@ -7,7 +7,7 @@ script:
 - cp configs/analytics.prod.yml src/main/resources/boxfuse.yml
 - mvn versions:set -DnewVersion=$BUILD_NUMBER
 - mvn versions:commit
-- mvn clean package
+- mvn --settings settings.xml clean package
 before_deploy:
 - mvn --settings settings.xml -DskipITs deploy
 after_deploy:
