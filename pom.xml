@@ -3,7 +3,7 @@
 
   <groupId>com.hello.analytics</groupId>
   <artifactId>suripu-analytics</artifactId>
-  <version>1.2.3</version>
+  <version>0.1.1</version>
   <packaging>jar</packaging>
 
   <name>suripu-analytics</name>
@@ -21,13 +21,6 @@
       <java.version>1.7</java.version>
       <jersey.version>2.19</jersey.version>
   </properties>
-
-  <scm>
-    <connection>scm:git:git://github.com/hello/suripu-analytics.git</connection>
-    <developerConnection>scm:git:git@github.com:hello/suripu-analytics.git</developerConnection>
-    <url>http://github.com/hello/suripu-analytics</url>
-    <tag>HEAD</tag>
-  </scm>
 
   <distributionManagement>
     <site>
@@ -91,12 +84,12 @@
         </exclusion>
       </exclusions>
     </dependency>
-      <dependency>
-          <groupId>io.dropwizard</groupId>
-          <artifactId>dropwizard-metrics-graphite</artifactId>
-          <version>${dropwizard.version}</version>
-      </dependency>
-      <dependency>
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-metrics-graphite</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
       <version>1.6.0</version>
@@ -120,10 +113,10 @@
             <groupId>com.hello.suripu</groupId>
             <artifactId>suripu-algorithm</artifactId>
           </exclusion>
-            <exclusion>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-            </exclusion>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
         </exclusions>
     </dependency>
     <dependency>
@@ -131,11 +124,6 @@
       <artifactId>suripu-api</artifactId>
       <version>${suripu.version}</version>
     </dependency>
-    <!--<dependency>-->
-      <!--<groupId>com.hello.suripu</groupId>-->
-      <!--<artifactId>suripu-coredw</artifactId>-->
-      <!--<version>${suripu.version}</version>-->
-    <!--</dependency>-->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -189,17 +177,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <mavenExecutorId>forked-path</mavenExecutorId>
-          <tagNameFormat>suripu-@{project.version}</tagNameFormat>
-          <preparationGoals>clean test</preparationGoals>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
