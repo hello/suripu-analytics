@@ -1,5 +1,6 @@
 language: java
 install: mvn --version
+sudo: false
 script:
 - echo "MAVEN_OPTS='-Xmx2g -XX:MaxPermSize=512m'" > ~/.mavenrc
 - mkdir src/main/resources
