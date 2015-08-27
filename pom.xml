@@ -278,7 +278,7 @@
             <goals>
               <goal>fuse</goal>
             </goals>
-            <phase>package</phase>
+            <phase>install</phase>
           </execution>
           <execution>
             <id>run-on-prod</id>
