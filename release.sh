@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 git checkout master
 git pull
-mvn release:clean release:prepare
+git checkout PRODUCTION
+git merge master --no-edit
+git push origin PRODUCTION
