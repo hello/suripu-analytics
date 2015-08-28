@@ -132,7 +132,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             }
 
             if (connectedSSID != DEFAULT_SSID && rssi != DEFAULT_RSSI) {
-                LOGGER.info("{} {} {}", batchedPeriodicData.getDeviceId(), connectedSSID, rssi);
+                LOGGER.trace("{} {} {}", batchedPeriodicData.getDeviceId(), connectedSSID, rssi);
             }
 
             for(final DataInputProtos.periodic_data periodicData : batchedPeriodicData.getDataList()) {
