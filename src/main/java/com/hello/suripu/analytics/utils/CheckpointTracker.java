@@ -13,6 +13,8 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import com.google.common.collect.Maps;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -51,7 +53,11 @@ public class CheckpointTracker {
         LOGGER.debug("Tracked kinesis checkpoint for shardId: {}", shardId);
     }
     public Boolean isEligibleForTracking(final Long recordTimestamp) {
-        return (recordTimestamp > (lastCheckpointTimestamp + (CHECKPOINT_TRACK_PERIOD * 60000L)));
+        if ((recordTimestamp > (lastCheckpointTimestamp + (CHECKPOINT_TRACK_PERIOD * 60000L))) &&
+            recordTimestamp < (lastCheckpointTimestamp + (CHECKPOINT_TRACK_PERIOD * 60000L * 60L))) {
+          return true;
+        }
+        return false;
     }
 
     public void insertCheckpoint(final String streamShardId, final String checkpoint, final Long timestamp) {
