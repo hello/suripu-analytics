@@ -18,6 +18,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +55,10 @@ public class CheckpointTracker {
     }
     public Boolean isEligibleForTracking(final Long recordTimestamp) {
         if ((recordTimestamp > (lastCheckpointTimestamp + (CHECKPOINT_TRACK_PERIOD * 60000L))) &&
-            recordTimestamp < (lastCheckpointTimestamp + (CHECKPOINT_TRACK_PERIOD * 60000L * 60L))) {
+            recordTimestamp < (DateTime.now(DateTimeZone.UTC).getMillis() + (60L * 60000L))) {
           return true;
         }
-        return false;
+      return false;
     }
 
     public void insertCheckpoint(final String streamShardId, final String checkpoint, final Long timestamp) {
