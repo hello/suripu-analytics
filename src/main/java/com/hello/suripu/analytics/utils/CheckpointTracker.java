@@ -13,7 +13,6 @@ import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
