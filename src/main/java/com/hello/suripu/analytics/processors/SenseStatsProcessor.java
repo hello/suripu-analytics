@@ -51,6 +51,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final Histogram uptimeDays;
     private BloomFilter<CharSequence> bloomFilter;
     private Long lastFilterTimestamp;
+    private Integer lastSnapshotHourOfDay;
     private String shardId = "No Lease Key";
 
 
@@ -62,6 +63,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
         lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
         uptimeDays = metrics.histogram(name(SenseStatsProcessor.class, "uptime-days"));
+        lastSnapshotHourOfDay = 0;
     }
 
     public void initialize(String shardId) {
@@ -85,6 +87,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         if(DateTime.now(DateTimeZone.UTC).getMillis() > (lastFilterTimestamp + (LOW_UPTIME_THRESHOLD * 1000L))) {
             createNewBloomFilter();
         }
+
         for(final Record record : records) {
 
             final String sequenceNumber = record.getSequenceNumber();
@@ -178,6 +181,15 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
         messagesProcessed.mark(records.size());
         waveCounts.mark(waveCountSum);
+
+
+        //If we're in a new hour, perform seen sense snapshot
+        final Integer currentHourOfDay = DateTime.now(DateTimeZone.UTC).getHourOfDay();
+        if (!currentHourOfDay.equals(lastSnapshotHourOfDay)) {
+            LOGGER.debug("Performing snapshot for the {} hour", currentHourOfDay);
+            activeDevicesTracker.snapshotSeenSenses();
+            lastSnapshotHourOfDay = currentHourOfDay;
+        }
 
     }
 
