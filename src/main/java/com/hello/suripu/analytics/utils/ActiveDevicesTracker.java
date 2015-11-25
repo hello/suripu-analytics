@@ -12,7 +12,10 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class ActiveDevicesTracker {
     public static final String SENSE_ACTIVE_SET_KEY = "active_senses";
@@ -20,6 +23,8 @@ public class ActiveDevicesTracker {
     public static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
     public static final String ALL_DEVICES_SEEN_SET_KEY = "all_seen_senses";
     public static final String WIFI_INFO_HASH_KEY = "wifi_info";
+    public static final String SENSE_SNAPSHOT_SET_KEY = "seen_sense_snapshot";
+    public static final Integer SECONDS_IN_48_HOURS = 172800;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
     private final JedisPool jedisPool;
@@ -143,5 +148,41 @@ public class ActiveDevicesTracker {
             }
         }
         LOGGER.debug("Tracked wifi info for  {} senses", wifiInfos.size());
+    }
+
+    //Store a snapshot of seen senses in a rolling set of keys
+    public void snapshotSeenSenses() {
+      Jedis jedis = null;
+
+
+      final SimpleDateFormat dateFormat = new SimpleDateFormat("_ddHH");
+      dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+      final String snapshotKeyName = SENSE_SNAPSHOT_SET_KEY + dateFormat.format(new Date());
+
+      try {
+        jedis = jedisPool.getResource();
+
+        final Pipeline pipe = jedis.pipelined();
+        pipe.multi();
+          pipe.zunionstore(snapshotKeyName, SENSE_ACTIVE_SET_KEY);
+          pipe.expire(snapshotKeyName, SECONDS_IN_48_HOURS);
+        pipe.exec();
+      }catch (JedisDataException exception) {
+        LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+        jedisPool.returnBrokenResource(jedis);
+        return;
+      } catch(Exception exception) {
+        LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+        jedisPool.returnBrokenResource(jedis);
+        return;
+      }
+      finally {
+        try{
+          jedisPool.returnResource(jedis);
+        }catch (JedisConnectionException e) {
+          LOGGER.error("Jedis Connection Exception while returning resource to pool. Redis server down?");
+        }
+      }
+      LOGGER.debug("Snapshot of seen senses stored to key {}", snapshotKeyName);
     }
 }
