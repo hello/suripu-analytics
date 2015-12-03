@@ -67,7 +67,7 @@ public class ActiveDevicesTracker {
                 pipe.sadd(hourlyActiveKey, entry.getKey());
                 if(!createdHourlyActiveSetKeys.contains(hourlyActiveKey)) {
                     pipe.expire(hourlyActiveKey, HOURLY_SET_KEY_EXPIRATION);
-                    createdHourlyActiveSetKeys.add(entry.getKey());
+                    createdHourlyActiveSetKeys.add(hourlyActiveKey);
                 }
             }
             pipe.exec();
