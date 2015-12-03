@@ -1,7 +1,6 @@
 package com.hello.suripu.analytics.utils;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.core.models.FirmwareInfo;
 import org.joda.time.DateTime;
@@ -17,7 +16,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import java.util.Map;
-import java.util.Set;
 
 public class ActiveDevicesTracker {
     private static final String SENSE_ACTIVE_SET_KEY = "active_senses";
@@ -27,34 +25,37 @@ public class ActiveDevicesTracker {
     private static final String HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX = "hourly_active_sense_%s";
     private static final String HOURLY_ACTIVE_PILL_SET_KEY_PREFIX = "hourly_active_pill_%s";
     private static final DateTimeFormatter SET_KEY_SUFFIX_PATTERN = DateTimeFormat.forPattern("yyyy_MM_dd_HH_00");
-    private static final Integer HOURLY_SET_KEY_EXPIRATION = 172800;
+    private static final Integer HOURLY_SET_KEY_EXPIRATION_IN_HOURS = 2;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
 
     private final JedisPool jedisPool;
-    private final Set<String> createdHourlyActiveSetKeys = Sets.newHashSet();
 
     public ActiveDevicesTracker(final JedisPool jedisPool) {
         this.jedisPool = jedisPool;
     }
 
     public void trackSenses(final Map<String, Long> activeSenses) {
-        final String hourlyActiveSenseSetKey = String.format(
-                HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX,
-                DateTime.now(DateTimeZone.UTC).toString(SET_KEY_SUFFIX_PATTERN)
-        );
-        trackDevices(SENSE_ACTIVE_SET_KEY, hourlyActiveSenseSetKey, ImmutableMap.copyOf(activeSenses));
+        trackDevices(SENSE_ACTIVE_SET_KEY, HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX, ImmutableMap.copyOf(activeSenses));
     }
 
     public void trackPills(final Map<String, Long> activePills) {
-        final String hourlyActivePillSetKey = String.format(
-                HOURLY_ACTIVE_PILL_SET_KEY_PREFIX,
-                DateTime.now(DateTimeZone.UTC).toString(SET_KEY_SUFFIX_PATTERN)
-        );
-        trackDevices(PILL_ACTIVE_SET_KEY, hourlyActivePillSetKey, ImmutableMap.copyOf(activePills));
+        trackDevices(PILL_ACTIVE_SET_KEY, HOURLY_ACTIVE_PILL_SET_KEY_PREFIX, ImmutableMap.copyOf(activePills));
     }
 
-    private void trackDevices(final String activeKey, final String hourlyActiveKey, final Map<String, Long> devicesSeen) {
+    private void trackDevices(final String activeKey, final String hourlyActiveKeySetPrefix, final Map<String, Long> devicesSeen) {
+        final DateTime dateTimeNow = DateTime.now(DateTimeZone.UTC);
+        final String hourlyActiveSetKey = String.format(
+                hourlyActiveKeySetPrefix,
+                dateTimeNow.toString(SET_KEY_SUFFIX_PATTERN)
+        );
+
+        final Long hourlyActiveKeySetExpirationTimestamp = dateTimeNow
+                .minusMillis(dateTimeNow.getMillisOfSecond())
+                .minusSeconds(dateTimeNow.getSecondOfMinute())
+                .minusMinutes(dateTimeNow.getMinuteOfHour())
+                .plusHours(HOURLY_SET_KEY_EXPIRATION_IN_HOURS)
+                .getMillis();
         Jedis jedis = null;
 
         try {
@@ -64,11 +65,8 @@ public class ActiveDevicesTracker {
             pipe.multi();
             for(Map.Entry<String, Long> entry : devicesSeen.entrySet()) {
                 pipe.zadd(activeKey, entry.getValue(), entry.getKey());
-                pipe.sadd(hourlyActiveKey, entry.getKey());
-                if(!createdHourlyActiveSetKeys.contains(hourlyActiveKey)) {
-                    pipe.expire(hourlyActiveKey, HOURLY_SET_KEY_EXPIRATION);
-                    createdHourlyActiveSetKeys.add(hourlyActiveKey);
-                }
+                pipe.sadd(hourlyActiveSetKey, entry.getKey());
+                pipe.expireAt(hourlyActiveSetKey, hourlyActiveKeySetExpirationTimestamp);
             }
             pipe.exec();
         }catch (JedisDataException exception) {
