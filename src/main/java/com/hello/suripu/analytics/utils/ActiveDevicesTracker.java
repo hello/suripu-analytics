@@ -50,12 +50,12 @@ public class ActiveDevicesTracker {
                 dateTimeNow.toString(SET_KEY_SUFFIX_PATTERN)
         );
 
-        final Long hourlyActiveKeySetExpirationTimestamp = dateTimeNow
+        final Long hourlyActiveKeySetExpirationTimestampSeconds = dateTimeNow
                 .minusMillis(dateTimeNow.getMillisOfSecond())
                 .minusSeconds(dateTimeNow.getSecondOfMinute())
                 .minusMinutes(dateTimeNow.getMinuteOfHour())
                 .plusHours(HOURLY_SET_KEY_EXPIRATION_IN_HOURS)
-                .getMillis();
+                .getMillis() / 1000;
         Jedis jedis = null;
 
         try {
@@ -66,7 +66,7 @@ public class ActiveDevicesTracker {
             for(Map.Entry<String, Long> entry : devicesSeen.entrySet()) {
                 pipe.zadd(activeKey, entry.getValue(), entry.getKey());
                 pipe.sadd(hourlyActiveSetKey, entry.getKey());
-                pipe.expireAt(hourlyActiveSetKey, hourlyActiveKeySetExpirationTimestamp);
+                pipe.expireAt(hourlyActiveSetKey, hourlyActiveKeySetExpirationTimestampSeconds);
             }
             pipe.exec();
         }catch (JedisDataException exception) {
