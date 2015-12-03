@@ -46,7 +46,6 @@ public class ActiveDevicesTracker {
         trackDevices(SENSE_ACTIVE_SET_KEY, hourlyActiveSenseSetKey, ImmutableMap.copyOf(activeSenses));
     }
 
-
     public void trackPills(final Map<String, Long> activePills) {
         final String hourlyActivePillSetKey = String.format(
                 HOURLY_ACTIVE_PILL_SET_KEY_PREFIX,
@@ -66,7 +65,7 @@ public class ActiveDevicesTracker {
             for(Map.Entry<String, Long> entry : devicesSeen.entrySet()) {
                 pipe.zadd(activeKey, entry.getValue(), entry.getKey());
                 pipe.sadd(hourlyActiveKey, entry.getKey());
-                if(!createdHourlyActiveSetKeys.contains(entry.getKey())) {
+                if(!createdHourlyActiveSetKeys.contains(hourlyActiveKey)) {
                     pipe.expire(hourlyActiveKey, HOURLY_SET_KEY_EXPIRATION);
                     createdHourlyActiveSetKeys.add(entry.getKey());
                 }
