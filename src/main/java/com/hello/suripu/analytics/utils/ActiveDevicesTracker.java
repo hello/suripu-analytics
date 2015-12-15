@@ -25,7 +25,7 @@ public class ActiveDevicesTracker {
     private static final String HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX = "hourly_active_sense_%s";
     private static final String HOURLY_ACTIVE_PILL_SET_KEY_PREFIX = "hourly_active_pill_%s";
     private static final DateTimeFormatter SET_KEY_SUFFIX_PATTERN = DateTimeFormat.forPattern("yyyy_MM_dd_HH_00");
-    private static final Integer HOURLY_SET_KEY_EXPIRATION_IN_HOURS = 2;
+    private static final Integer HOURLY_SET_KEY_EXPIRATION_IN_HOURS = 48;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
 
