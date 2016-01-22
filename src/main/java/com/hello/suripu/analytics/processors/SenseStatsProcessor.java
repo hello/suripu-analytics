@@ -172,7 +172,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
             for(final Map.Entry<Integer, FirmwareInfo> mapEntry : fwVersionTimestampMap.entrySet()) {
                 seenFirmwares.put(deviceName, mapEntry.getValue());
             }
-
             wifiInfos.put(deviceName, new WifiInfo(rssi, connectedSSID));
         }
 
