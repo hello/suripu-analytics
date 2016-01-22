@@ -20,7 +20,11 @@ import java.util.Map;
 public class ActiveDevicesTracker {
     private static final String SENSE_ACTIVE_SET_KEY = "active_senses";
     private static final String PILL_ACTIVE_SET_KEY = "active_pills";
+    private static final String DEVICE_ID_KEY_BASE = "device_id:";
     private static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
+    private static final String TOP_FIRMWARES_SEEN_SET_KEY = "top_firmwares_seen";
+    private static final String DEVICE_TOP_FIRMWARE_SET_KEY = "device_top_firmware";
+    private static final String DEVICE_MIDDLE_FIRMWARE_SET_KEY = "device_middle_firmware";
     private static final String WIFI_INFO_HASH_KEY = "wifi_info";
     private static final String SENSE_UPTIME_HSET_KEY = "sense_uptimes";
     private static final String HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX = "hourly_active_sense_%s";
@@ -99,8 +103,18 @@ public class ActiveDevicesTracker {
             pipe.multi();
             for(final Map.Entry <String, FirmwareInfo> entry : seenFirmwares.entrySet()) {
                 final FirmwareInfo fwEntry = entry.getValue();
-                pipe.zadd(FIRMWARES_SEEN_SET_KEY, fwEntry.timestamp, fwEntry.middleVersion);
-                pipe.zadd(fwEntry.middleVersion, fwEntry.timestamp, fwEntry.device_id);
+                if (Integer.valueOf(fwEntry.middleVersion) > 0) {
+                    pipe.zadd(FIRMWARES_SEEN_SET_KEY, fwEntry.timestamp, fwEntry.middleVersion);
+                    pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "middle_version", fwEntry.middleVersion);
+                    pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "timestamp", fwEntry.timestamp.toString());
+                    pipe.zadd(fwEntry.middleVersion, fwEntry.timestamp, fwEntry.device_id);
+                }
+                if (!fwEntry.topVersion.equals("0")) {
+                    pipe.zadd(TOP_FIRMWARES_SEEN_SET_KEY, fwEntry.timestamp, fwEntry.topVersion);
+                    pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "top_version", fwEntry.topVersion);
+                    pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "timestamp", fwEntry.timestamp.toString());
+                    pipe.zadd(fwEntry.topVersion, fwEntry.timestamp, fwEntry.device_id);
+                }
             }
             pipe.exec();
         }catch (JedisDataException exception) {

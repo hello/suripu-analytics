@@ -9,6 +9,8 @@ import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -118,7 +120,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             //Filter out PCH IPs from active sense tracking
             activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
 
-            final Map<Integer, Long> fwVersionTimestampMap = Maps.newHashMap();
+            final Map<Integer, FirmwareInfo> fwVersionTimestampMap = Maps.newHashMap();
 
             final DataInputProtos.batched_periodic_data batchedPeriodicData = batchPeriodicDataWorker.getData();
 
@@ -143,26 +145,34 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
 
-                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
-                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
-                }
+//                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
+//                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
+//                }
 
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
-                if (fwVersionTimestampMap.containsKey(firmwareVersion) && fwVersionTimestampMap.get(firmwareVersion) > timestampMillis) {
+
+                if (fwVersionTimestampMap.containsKey(firmwareVersion) && fwVersionTimestampMap.get(firmwareVersion).timestamp > timestampMillis) {
                     continue;
                 }
 
-                fwVersionTimestampMap.put(firmwareVersion, timestampMillis);
+                fwVersionTimestampMap.put(firmwareVersion, new FirmwareInfo(firmwareVersion.toString(), "0", deviceName, timestampMillis));
             }
 
-            for(final Map.Entry<Integer, Long> mapEntry : fwVersionTimestampMap.entrySet()) {
-                final String firmwareVersion = mapEntry.getKey().toString();
-                final Long timeStamp = mapEntry.getValue();
-                seenFirmwares.put(deviceName, new FirmwareInfo(firmwareVersion, "0", deviceName, timeStamp));
+            //If we're getting top fw info from the protobuf, only store that
+            if (batchPeriodicDataWorker.hasFirmwareTopVersion()) {
+                final String topFWVersion = batchPeriodicDataWorker.getFirmwareTopVersion();
+                final String middleFWVersion = batchPeriodicDataWorker.getFirmwareMiddleVersion();
+                fwVersionTimestampMap.clear();
+                fwVersionTimestampMap.put(Integer.valueOf(middleFWVersion), new FirmwareInfo(middleFWVersion, topFWVersion, deviceName, batchPeriodicDataWorker.getReceivedAt()));
             }
+
+            for(final Map.Entry<Integer, FirmwareInfo> mapEntry : fwVersionTimestampMap.entrySet()) {
+                seenFirmwares.put(deviceName, mapEntry.getValue());
+            }
+
             wifiInfos.put(deviceName, new WifiInfo(rssi, connectedSSID));
         }
 
