@@ -15,7 +15,6 @@ script:
 - mkdir -p $TEMP_DIR/etc/init/
 - mkdir deb-pkg
 - cp configs/$APP_NAME.prod.yml $TEMP_DIR/etc/hello/$APP_NAME.yml
-- cp init/$APP_NAME.conf $TEMP_DIR/etc/init/
 - mvn --settings settings.xml clean test
 before_deploy:
 - mvn clean
