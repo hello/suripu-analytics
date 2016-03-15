@@ -60,10 +60,6 @@
       <id>central</id>
       <url>https://repo1.maven.org/maven2</url>
     </pluginRepository>
-    <pluginRepository>
-      <id>boxfuse-repo</id>
-      <url>https://files.boxfuse.com</url>
-    </pluginRepository>
   </pluginRepositories>
 
   <dependencies>
@@ -244,30 +240,6 @@
             </manifest>
           </archive>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.boxfuse.client</groupId>
-        <artifactId>boxfuse-maven-plugin</artifactId>
-        <version>1.9.4.690</version>
-        <executions>
-          <execution>
-            <id>fuse-image</id>
-            <goals>
-              <goal>fuse</goal>
-            </goals>
-            <phase>install</phase>
-          </execution>
-          <execution>
-            <id>run-on-prod</id>
-            <goals>
-              <goal>convert</goal>
-            </goals>
-            <phase>deploy</phase>
-            <configuration>
-              <env>prod</env>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
