@@ -120,7 +120,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             //Filter out PCH IPs from active sense tracking
             activeSenses.put(deviceName, batchPeriodicDataWorker.getReceivedAt());
 
-            final Map<Integer, FirmwareInfo> fwVersionTimestampMap = Maps.newHashMap();
+            final Map<String, FirmwareInfo> fwVersionTimestampMap = Maps.newHashMap();
 
             final DataInputProtos.batched_periodic_data batchedPeriodicData = batchPeriodicDataWorker.getData();
 
@@ -154,11 +154,12 @@ public class SenseStatsProcessor implements IRecordProcessor {
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
 
-                if (fwVersionTimestampMap.containsKey(firmwareVersion) && fwVersionTimestampMap.get(firmwareVersion).timestamp > timestampMillis) {
+                final String fwHex = Integer.toHexString(firmwareVersion);
+                if (fwVersionTimestampMap.containsKey(fwHex) && fwVersionTimestampMap.get(fwHex).timestamp > timestampMillis) {
                     continue;
                 }
 
-                fwVersionTimestampMap.put(firmwareVersion, new FirmwareInfo(firmwareVersion.toString(), "0", deviceName, timestampMillis));
+                fwVersionTimestampMap.put(fwHex, new FirmwareInfo(fwHex, "0", deviceName, timestampMillis));
             }
 
             //If we're getting top fw info from the protobuf, only store that
@@ -166,10 +167,10 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 final String topFWVersion = batchPeriodicDataWorker.getFirmwareTopVersion();
                 final String middleFWVersion = batchPeriodicDataWorker.getFirmwareMiddleVersion();
                 fwVersionTimestampMap.clear();
-                fwVersionTimestampMap.put(Integer.valueOf(middleFWVersion), new FirmwareInfo(middleFWVersion, topFWVersion, deviceName, batchPeriodicDataWorker.getReceivedAt()));
+                fwVersionTimestampMap.put(middleFWVersion, new FirmwareInfo(middleFWVersion, topFWVersion, deviceName, batchPeriodicDataWorker.getReceivedAt()));
             }
 
-            for(final Map.Entry<Integer, FirmwareInfo> mapEntry : fwVersionTimestampMap.entrySet()) {
+            for(final Map.Entry<String, FirmwareInfo> mapEntry : fwVersionTimestampMap.entrySet()) {
                 seenFirmwares.put(deviceName, mapEntry.getValue());
             }
 
