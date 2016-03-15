@@ -22,11 +22,13 @@ public class ActiveDevicesTracker {
     private static final String PILL_ACTIVE_SET_KEY = "active_pills";
     private static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
     private static final String WIFI_INFO_HASH_KEY = "wifi_info";
+    private static final String SENSE_UPTIME_HSET_KEY = "sense_uptimes";
     private static final String HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX = "hourly_active_sense_%s";
     private static final String HOURLY_ACTIVE_PILL_SET_KEY_PREFIX = "hourly_active_pill_%s";
     private static final DateTimeFormatter SET_KEY_SUFFIX_PATTERN = DateTimeFormat.forPattern("yyyy_MM_dd_HH_00");
     private static final Integer HOURLY_SET_KEY_EXPIRATION_IN_HOURS = 48;
 
+    private static final String GENERIC_EXCEPTION_LOG_MESSAGE = "Jedis Connection Exception while returning resource to pool. Redis server down?";
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
 
     private final JedisPool jedisPool;
@@ -82,7 +84,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error("Jedis Connection Exception while returning resource to pool. Redis server down?");
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
         LOGGER.debug("Tracked {} active devices", devicesSeen.size());
@@ -114,7 +116,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error("Jedis Connection Exception while returning resource to pool. Redis server down?");
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
         LOGGER.debug("Tracked {} device firmware versions", seenFirmwares.size());
@@ -144,9 +146,43 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error("Jedis Connection Exception while returning resource to pool. Redis server down?");
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
         LOGGER.debug("Tracked wifi info for  {} senses", wifiInfos.size());
+    }
+
+    public void trackUptime(final Map<String, Integer> uptimes) {
+        trackUptime(SENSE_UPTIME_HSET_KEY, ImmutableMap.copyOf(uptimes));
+    }
+
+    private void trackUptime(final String redisKey, final Map<String, Integer> uptime) {
+        Jedis jedis = null;
+
+        try {
+            jedis = jedisPool.getResource();
+            final Pipeline pipe = jedis.pipelined();
+            pipe.multi();
+            for(final Map.Entry <String, Integer> entry : uptime.entrySet()) {
+                pipe.hset(redisKey, entry.getKey(), String.valueOf(entry.getValue()));
+            }
+            pipe.exec();
+        }catch (JedisDataException exception) {
+            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            jedisPool.returnBrokenResource(jedis);
+            return;
+        } catch(Exception exception) {
+            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            jedisPool.returnBrokenResource(jedis);
+            return;
+        }
+        finally {
+            try{
+                jedisPool.returnResource(jedis);
+            }catch (JedisConnectionException e) {
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
+            }
+        }
+        LOGGER.debug("action=track-uptime num_senses={}", uptime.size());
     }
 }

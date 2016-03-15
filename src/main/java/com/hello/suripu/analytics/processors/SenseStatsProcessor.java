@@ -79,6 +79,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         final Map<String, Long> activeSenses = Maps.newHashMap();
         final Map<String, FirmwareInfo> seenFirmwares = Maps.newHashMap();
         final Map<String, WifiInfo> wifiInfos = Maps.newHashMap();
+        final Map<String, Integer> uptimeBySense = Maps.newHashMapWithExpectedSize(records.size());
 
         Long waveCountSum = 0L;
 
@@ -101,6 +102,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             final String deviceIPAddress = batchPeriodicDataWorker.getIpAddress();
             final Integer deviceUptime = batchPeriodicDataWorker.getUptimeInSecond();
 
+            uptimeBySense.put(deviceName, deviceUptime);
             int days = Days.daysBetween(DateTime.now(DateTimeZone.UTC).minusSeconds(deviceUptime), DateTime.now(DateTimeZone.UTC)).getDays();
 
             if (deviceUptime <= LOW_UPTIME_THRESHOLD) {
@@ -175,6 +177,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         activeDevicesTracker.trackSenses(activeSenses);
         activeDevicesTracker.trackFirmwares(seenFirmwares);
         activeDevicesTracker.trackWifiInfo(wifiInfos);
+        activeDevicesTracker.trackUptime(uptimeBySense);
 
         messagesProcessed.mark(records.size());
         waveCounts.mark(waveCountSum);
