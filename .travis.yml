@@ -1,47 +1,54 @@
 language: java
 install: mvn --version
 sudo: false
+env:
+  global:
+  - APP_NAME=suripu-analytics
+  - BUILD_NUMBER=0.1.$TRAVIS_BUILD_NUMBER
+  - secure: QNnwLi2wG+FqwTeevdW8jchKkQT/CuHMmmEcNEOhQj1uWmy/hkYGHQqDgdwTP/mckVfSlhSLKLklmTX4EgwDjy8SXteOGaQPYXw/1V5gO4TI4JTKYTvM0DCgXv8eKc2Z5Yk8DtlIriseSBdDK7d1AYGpt51JC8lYb9R/9r1qw+JF1BJzQMnsJT7NVAhJnZzdeF+Tv6oaF5KgLdwYttgT3Zv3PbU6x9u0EL1B+aYyO19m3wqOy8k6j9AL2E4nf23Fhyv1Cly8vNPGbTTilwDovZaAwRWJWBDNaqxvzS85vFqF9QwtZ6U0leV7p+m5+G6GbvLzYHZgLUc7PRnHzWulfF0RZ/c908oT272fuBKgeYT6lJba7ccjNUUWVSVo3ivtU4t8evBcSAjyZjpWR7ELgPBUv8Ua3guQyFs92E3o2tp03Zfqt6iAh7odB1VccwlHQ/EylOspk4jwKjBqoUTrAOfUNka8yEJB0AEUV4XjrozJ9uhRQVtmG1cTob/yIyblk+6PKjkXJYxka7yNW4T7B0F5lZLi0wstywz6VLYVC4ySMRk2ks6I0pKqQQWhlsHvoZ2dnthfSnPp4xs4+iNyNUn0+e5mfVgBazhOzbBfHx07UsSBk5K0YZx5p1Or5b77FGutJ3/7B4KUHZCf/X1tuN+LVBYvD/3lpArevhNoTQk=
+  - secure: kYIeT9fX5wwr5MTJLnL3VfBdR7Ir4jveW5qwNIXFZ+bnJEbbhTJbe5hmnq3dsPB94ZVw1rE0uXWAhI05Ye1z/T54KzYGXN725mi0fSgDl2+F6LAvGwHtB2rc3ld4PEneXOsdQqM8FMkO7TohSo3hGWFM+oYXFdgaWVq+lWlRycMyLGknQZFyqTG2GwZVAuABbaJ+3yg9h4Ya67eRUmV9CU/pjFkcmLdyqFQeVH71Mns80h7aly0gZtA+yPNJi/YXV8yYOkEzOYtssbEOlRuLGBAeS4XLuInAnhNlj1nDglHNiGt5jkDDVMWqhbYYtoTCIVTt3tsCXrkcv7Wp0yIAUDLnsPk1V0fxiRnu6jWvkW1cFggIPwcV6aLTlehPxE6ja5+L44H50tI+LhsbPW4ePvzmVv+EPGoltQGRklsZQK0mvG0iABrt8U86JWu8yeeqPrEov9MAwbiymPAyczzBpUEdQVTGuIyixOOhxIZIvadgYWjYgzIvTDN7E6bg+ZqQcmZs3rsfAMbd+vZXjoSrjhhdC3OViW/iQXqzXAhD+33Od/8vBufvRIkhf4Fd6K9bMTuxhZDRD4H+ucNp3bKVVJSK4UwAv3Bt682QagBy6SJd9yQ8l5KdWNr5rXsEsVskx9NNBYpuob6/mIEIf6vTuLY7zNloEqE8lW0QoL5PYeQ=
 script:
 - echo "MAVEN_OPTS='-Xmx2g -XX:MaxPermSize=512m'" > ~/.mavenrc
-- mkdir src/main/resources
-- cp configs/analytics.prod.yml src/main/resources/boxfuse.yml
+- export TEMP_DIR="/tmp/$APP_NAME"
+- mkdir -p $TEMP_DIR/opt/hello
+- mkdir -p $TEMP_DIR/etc/hello
+- mkdir -p $TEMP_DIR/etc/init/
+- mkdir deb-pkg
+- cp configs/$APP_NAME.prod.yml $TEMP_DIR/etc/hello/$APP_NAME.yml
+- cp init/$APP_NAME.conf $TEMP_DIR/etc/init/
+- mvn --settings settings.xml clean test
+before_deploy:
+- mvn clean
 - mvn versions:set -DnewVersion=$BUILD_NUMBER
 - mvn versions:commit
-- mvn --settings settings.xml clean package
-before_deploy:
 - mvn --settings settings.xml -DskipITs deploy
+- gem install fpm
+- cp target/$APP_NAME-$BUILD_NUMBER.jar $TEMP_DIR/opt/hello/$APP_NAME.jar
+- fpm --force -s dir -C $TEMP_DIR -t deb --name "$APP_NAME" --version $BUILD_NUMBER
+  --config-files etc/hello .
+- cp ${APP_NAME}_${BUILD_NUMBER}_amd64.deb configs/
 after_deploy:
 - git config --global user.email "builds@travis-ci.com"
 - git config --global user.name "Travis CI"
-- export GIT_TAG=suripu-analytics-$TRAVIS_BRANCH-$BUILD_NUMBER
+- export GIT_TAG=$APP_NAME-$TRAVIS_BRANCH-$BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
 - git push --quiet git@github.com:hello/suripu-analytics.git --tags
 deploy:
-  provider: s3
+- provider: s3
   access_key_id: $CI_DEPLOY_USERNAME
   secret_access_key: $CI_DEPLOY_PASSWORD
   bucket: hello-deploy
   skip_cleanup: true
   local_dir: configs
-  upload-dir: configs/com/hello/analytics/suripu-analytics/$BUILD_NUMBER
+  upload-dir: packages/com/hello/analytics/$APP_NAME/$BUILD_NUMBER
   region: us-east-1
   on:
     tags: false
-    branch:
-    - PRODUCTION
+    branch: PRODUCTION
 branches:
   only:
   - master
   - PRODUCTION
 notifications:
   email:
-  - josef+travis-suripu2@sayhello.com
-jdk:
-- oraclejdk7
-env:
-  global:
-  - BUILD_NUMBER=0.1.$TRAVIS_BUILD_NUMBER
-  - secure: DkJvY7MgQRQ8SvHM3NN2aKEFjtrmUQrN5yLwGteERLFA9jtkmesbmokmukIczPvrtxtP4gFBxWz2v/rC7jWhq4+i4Ph0VJiPsM0Yg6RArAGBSQAwkgsWf1yUn6FAGQKCOBWjed49AGo4Yk0QgOUUfEZ8TRM1iLrctUzJmHebohkFyqc4o3eI9Ze7TgZ6lnfYHRAn74oXgqMVWPtRdb4oDtH68Y2YqNanAOPb8ZhaVn0qxV9PamH0AmwfiT/2UsTg80odqUhST32/+oV4LTQBkuXfBiHyfyFt5xTZ0M24d8IPC6422Od26ntbL+2RVy2bxP6zOhJaNxURsLtVYx2Dx1b1nlHANGk1IC4uPMcmUht/HNaTRcXBuiQhoe24eRnMghniv4QfaSOYtIG5LtN+m1ZMjw8NXfXolhUreNAH31U1Dx1Kp6qfEya0kZLX9LVHMS4VzCRF6TW/MpUnYHC1JYj8HeumyRBPsUp8c0GwHibw5yFIjGcrEyeU1JLHm1MmDp+3d5KkgYVyPujrrMAlzyzlk1A0H4cQj/4aSBKPbIAgYK5oWtY8AW/7chw+gNAA90VEI5FJJU4FgoC+6r3wRvQDsUY3dN6rQM89nt+I05mhI5iyPLS2Hy3Vmf6B/mNK8pU3vcyRXZkRsxw5sMGHhAYMoeVkkvxegdO0XCrBC8c=
-  - secure: eHhFwmTgquPwslXnqfoJZG/RMihhsADWtsehS0sHgbxeqfmiFpm415ZRUIYQ8juGSCNgnEVCdqLRaSrrCxi6fI6a0iuwkw7yihweZ1MRrR8wlHa8371UuHGL4W3+HZrbK7029CtPR2ILbxs2baZbg1pWBSgZZsRTiVBpLC7+Jet+fnNzeAk6YqnzrVzDSlb7FqagFsgjRW9XBK7GxIrjDd5mSkM2HmQGLvESx+eBDoSDkNbKwdTu/aL7kNw852rvZi9ryD7z9ije1m3iB7Hp0LT7fCsvPDeYomnLBUX+10Mmg4gChsr3ei25YmFhtC89fFCtOCdPQsV752l8Itedo4vbqoAAQjZqn2tWkJUI4z8vtfjtPOdv9PqJB/+h1j4jonNZkn8DGpm163NvybL6nTFnjJhvyD5tOU3mvOUfWOaHPs71fiekzYKLFxGbLEjhI+bbz47BLJxHZqJhePox9jm0yh/DlMiFrFFv+RzOhK+4iT8ZiDsxmtQRdIQgPVhgyUsKZ/UJjWZBF2fafeXUjNNftoBZVnGMnifnZhp9g98+b6o145sFPWyYJ+CFQuM/OkMm/CdFWSepViyOz6qzEsAiLg7gLbqNWdwPDN/l2MFtfTPDxwI+AkMELRZzemZcnLaBdOj3EVTeG9XgUbMsK2wOBQ9cjmuxS2IUDgOJmU4=
-  - secure: DXSTaIG8OKYZ7Pgk9pk7BtexrYhuB4oN+DYAQqwLX+nHcjdoIYNiN4y8gQ8lMCBN8IuJMhSI14gIEfJbeFN/8zYfFRtcwsKbDQdEG0o4M0WidgtSsZA9oHYDBu7hRjGXLjJjt65K44YN9YivAl95XXXqL0AJfaX+fg+vxAnYDNRULE5FwOlaJUfdocbu6M4uA9EYuVy6m/xlfYtrZnO/LiczwtBOh9MqK5O7fLwF1EpQq8xf/wlIrk26UlnmvbVa8Z3mIgUfuwErVxuJAKQwfVc6a8XQV3qGA50t3ZN5XzRQ1hUch0gKjYVL+mRAWQKTCgLt4XqQDc/rW98kPUQRCynboG3lfcxkkeszsGcSEmge0dzwuLPec2LYCSBs+Lsm+fjY7UuXODJJqnEtr5WX/U7aF34klCs0gQgncGEOQQllEFioNhEe6+YBPozOpUkH7yug3ZldJc0P+ebw0GAjxHy/n6lIfTIu/cDd0voMK9RoED5u4rK88auvKg8n4iahSzuif5RaVjQ0h1ybaH30m2RmrKQorh5NH9j1VomBk0FJXPA6wvtqiMI0zxP1ixPjEibzZYv2cAkFj1lx0wC4//PNx1Yoi3VX00AeL52rO68AqZlTKLXpSExsIPC+cTs8BXmJ+8Zul5m1rUnhy2Inc7PqRxexjsX+92JdRxZM4Jc=
-  - secure: lxRkosvt5b0sv88pGYEjPE7rQtGcBZXri7unJ0Dg0OD0jQt9rCQKoJ2mj93pBOW46MS9st9O/v5Do6vDI0ZJpz65ktfZJay3eg0I8y5P+H0SYx82bRrEVJOgCZWXqoAV5uTw610Or+YpyNzC9B9aZganjMVY0YIPLrmFOjH3C4zNhJOTwnOHFUmdEKDOa1yIiGYhCFLTFOHFDja/gtLxPstMx4/y12Bld9SAFnbThuvckqngp5Avxbxea4hI5l2BXCzzZOc/T8xowol0sdE4wraNfPks7cyqTSeI0GUfh5hKKZwrCETbbp2/JEq/Qq1r4NMygtzJaiJz9vZGF6ggNobdyptGeuyR+zLgUgN2C+yaxMXuy4HKYXfgQdAksNZ9fcUPyGgmpAMSb+6H2rrNW0IjcqDebaaxpUx8gJNKGI4LwRP7tJqskNeXa8PPT9MtHPetb/j0586xC2S2Bh7907z9IQacv1uDvYarkfqiNCQ6pFacvfiB+ZGelhWNzviqXcuxxaSKEJ3g0d/PnYWg+d+tAjH+xrJZPHz0s8FT0Bwj0z9+VioAMoPMVrSr1VFl1WxjAnykGxDZwuWg5T3oHdcnplUBIRrKFVzb124qhrNSHpuOyHE/uFqnRScWbvMZdG8LCYRtH9xpAYtwIFlC05AbwEXqC4oL+sLWPSqvsIE=
+  - josef+travis-analytics@sayhello.com
