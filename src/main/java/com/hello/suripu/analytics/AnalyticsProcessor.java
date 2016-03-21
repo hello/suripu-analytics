@@ -51,7 +51,8 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
     private final static String CHECKPOINT_TABLE_NAME = "kinesis_checkpoint_track";
     private final static ClientConfiguration DEFAULT_CLIENT_CONFIGURATION = new ClientConfiguration()
             .withConnectionTimeout(200)
-            .withMaxErrorRetry(1);
+            .withMaxErrorRetry(1)
+            .withMaxConnections(10);
 
     public static void main( String[] args ) throws Exception
     {
