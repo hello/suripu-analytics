@@ -87,4 +87,17 @@ public class AnalyticsConfiguration extends Configuration {
     public GraphiteConfiguration getGraphite() {
         return graphite;
     }
+
+    @JsonProperty("min_threads")
+    private Integer minThreads = 2;
+    public Integer minThreads() {
+        return minThreads;
+    }
+
+    @JsonProperty("max_threads")
+    private Integer maxThreads = 10;
+    public Integer maxThreads() {
+        return maxThreads;
+    }
+
 }

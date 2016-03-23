@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -131,7 +132,8 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
         final Worker pillWorker = new Worker(pillProcessorFactory , pillKinesisConfig);
         final ExecutorService executorService = environment.lifecycle()
                 .executorService("analytics")
-                .maxThreads(2)
+                .workQueue(new LinkedBlockingQueue(configuration.maxThreads()))
+                .minThreads(configuration.minThreads())
                 .build();
 
         // SENSE

@@ -87,7 +87,7 @@ public class ActiveDevicesTracker {
                 LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
-        LOGGER.debug("Tracked {} active devices", devicesSeen.size());
+        LOGGER.debug("Tracked {} active devices key={}", devicesSeen.size(), activeKey);
     }
 
     public void trackFirmwares(final Map<String, FirmwareInfo> seenFirmwares) {
