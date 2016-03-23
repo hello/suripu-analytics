@@ -22,11 +22,16 @@ public class KinesisWorkerManager implements Managed {
 
     @Override
     public void start() throws Exception {
+
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 LOGGER.info("worker={} action=starting", worker.getApplicationName());
-                worker.run();
+                try {
+                    worker.run();
+                } catch (Exception e) {
+                    LOGGER.error("worker={} error={}", worker.getApplicationName(), e.getMessage());
+                }
             }
         });
     }
