@@ -71,7 +71,7 @@ public class CheckpointTracker {
 
         try {
             this.dynamoDBClient.putItem(putItemRequest);
-            LOGGER.debug("Checkpoint tracked for {} at {}", streamShardId, timestamp);
+            LOGGER.info("event=checkpoint-track shard_id={} timestamp={} checkpoint={}", streamShardId, timestamp, checkpoint);
         } catch (AmazonServiceException var5) {
             LOGGER.error("Checkpoint track insert failed. AWS service error: {}", var5.getMessage());
         } catch (AmazonClientException var6) {
