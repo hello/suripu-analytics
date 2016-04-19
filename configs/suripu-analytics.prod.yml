@@ -21,7 +21,7 @@ kinesis:
     sense_sensors_data: https://kinesis.us-east-1.amazonaws.com
     batch_pill_data: https://kinesis.us-east-1.amazonaws.com
   streams:
-    sense_sensors_data: sense_sensors_data
+    sense_sensors_data: sense_sensors_data_fanout_one
     batch_pill_data: batch_pill_data
 
 dynamodb:
