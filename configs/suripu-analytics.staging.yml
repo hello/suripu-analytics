@@ -35,7 +35,7 @@ logging:
   loggers: 
     com.hello.suripu.analytics: INFO
 
-max_records: 1000
+max_records: 2000
 
 metrics_enabled: false
 
