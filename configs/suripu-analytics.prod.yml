@@ -12,6 +12,27 @@ server:
     - type: http
       port: 2223
       idleTimeout: 25 seconds
+
+logging:
+  level: INFO
+  loggers:
+    com.hello.suripu: INFO
+    com.amazonaws: WARN
+  appenders:
+    - type: file
+      threshold: INFO
+      currentLogFilename: /var/log/suripu-analytics/suripu-analytics.log
+      archivedLogFilenamePattern: /var/log/suripu-analytics/suripu-analytics-%d{yyyy-MM-dd}.log.gz
+      archivedFileCount: 7
+    - type: papertrail
+      host: logs2.papertrailapp.com
+      port: 11366
+      ident: suripu-analytics
+      # timezone: UTC
+      # facility: USER
+      # sendLocalName: true
+
+
 app_names:
   pill_stats: AnalyticsPillProcessorProd
   sense_stats: AnalyticsSenseProcessorProd
@@ -27,8 +48,6 @@ kinesis:
 dynamodb:
   region: us-east-1
   tables:
-    alarm_info: prod_alarm_info
-    sense_last_seen : prod_sense_last_seen
     kinesis_checkpoint_track : prod_kinesis_checkpoint_track
   endpoints:
     alarm_info: http://dynamodb.us-east-1.amazonaws.com

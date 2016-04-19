@@ -86,6 +86,11 @@
       <version>${dropwizard.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.dcsquare</groupId>
+      <artifactId>dropwizard-papertrail</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
       <version>1.6.0</version>

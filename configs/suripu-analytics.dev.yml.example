@@ -1,4 +1,27 @@
---- 
+---
+server:
+  adminMinThreads: 1
+  adminMaxThreads: 64
+  adminContextPath: /
+  applicationContextPath: /
+  applicationConnectors:
+    - type: http
+      port: 2222
+      idleTimeout: 25 seconds
+  adminConnectors:
+    - type: http
+      port: 2223
+      idleTimeout: 25 seconds
+
+logging:
+  level: INFO
+  loggers:
+    com.hello.suripu: INFO
+    com.amazonaws: WARN
+  appenders:
+    - type: console
+      threshold: INFO
+
 app_names:
   pill_stats: AnalyticsPillProcessorDev
   sense_stats: AnalyticsSenseProcessorDev
