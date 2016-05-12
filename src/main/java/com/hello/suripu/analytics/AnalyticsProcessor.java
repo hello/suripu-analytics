@@ -1,5 +1,7 @@
 package com.hello.suripu.analytics;
 
+import com.google.common.collect.ImmutableList;
+
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -18,6 +20,8 @@ import com.hello.suripu.analytics.processors.KinesisWorkerManager;
 import com.hello.suripu.analytics.processors.PillStatsProcessorFactory;
 import com.hello.suripu.analytics.processors.SenseStatsCommand;
 import com.hello.suripu.analytics.processors.SenseStatsProcessorFactory;
+import com.hello.suripu.coredw8.metrics.RegexMetricFilter;
+
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -86,12 +90,15 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
             final String env = (configuration.getDebug()) ? "dev" : "prod";
             final String prefix = String.format("%s.%s.suripu-analytics", apiKey, env);
 
+            final ImmutableList<String> metrics = ImmutableList.copyOf(configuration.getGraphite().getIncludeMetrics());
+            final RegexMetricFilter metricFilter = new RegexMetricFilter(metrics);
+
             final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHostName, 2003));
             final GraphiteReporter reporter = GraphiteReporter.forRegistry(environment.metrics())
                     .prefixedWith(prefix)
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
-                    .filter(MetricFilter.ALL)
+                    .filter(metricFilter)
                     .build(graphite);
             reporter.start(interval, TimeUnit.SECONDS);
 
