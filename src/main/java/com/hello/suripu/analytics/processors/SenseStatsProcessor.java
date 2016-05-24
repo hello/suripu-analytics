@@ -10,7 +10,6 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -153,7 +152,6 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
-
                 final String fwHex = Integer.toHexString(firmwareVersion);
                 if (fwVersionTimestampMap.containsKey(fwHex) && fwVersionTimestampMap.get(fwHex).timestamp > timestampMillis) {
                     continue;
