@@ -21,8 +21,6 @@ public class ActiveDevicesTracker {
     private static final String SENSE_ACTIVE_SET_KEY = "active_senses";
     private static final String PILL_ACTIVE_SET_KEY = "active_pills";
     private static final String DEVICE_ID_KEY_BASE = "device_id:";
-    private static final String TOP_FIRMWARE_KEY_BASE = "top:";
-    private static final String MIDDLE_FIRMWARE_KEY_BASE = "middle:";
     private static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
     private static final String TOP_FIRMWARES_SEEN_SET_KEY = "top_firmwares_seen";
     private static final String DEVICE_TOP_FIRMWARE_SET_KEY = "device_top_firmware";
@@ -106,17 +104,17 @@ public class ActiveDevicesTracker {
             for(final Map.Entry <String, FirmwareInfo> entry : seenFirmwares.entrySet()) {
                 final FirmwareInfo fwEntry = entry.getValue();
 
-                if (!fwEntry.middleVersion.equals("0")) {
+                if (Integer.valueOf(fwEntry.middleVersion) > 0) {
                     pipe.zadd(FIRMWARES_SEEN_SET_KEY, fwEntry.timestamp, fwEntry.middleVersion);
                     pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "middle_version", fwEntry.middleVersion);
                     pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "timestamp", fwEntry.timestamp.toString());
-                    pipe.zadd(MIDDLE_FIRMWARE_KEY_BASE.concat(fwEntry.middleVersion), fwEntry.timestamp, fwEntry.device_id);
+                    pipe.zadd(fwEntry.middleVersion, fwEntry.timestamp, fwEntry.device_id);
                 }
                 if (!fwEntry.topVersion.equals("0")) {
                     pipe.zadd(TOP_FIRMWARES_SEEN_SET_KEY, fwEntry.timestamp, fwEntry.topVersion);
                     pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "top_version", fwEntry.topVersion);
                     pipe.hset(DEVICE_ID_KEY_BASE.concat(fwEntry.device_id), "timestamp", fwEntry.timestamp.toString());
-                    pipe.zadd(TOP_FIRMWARE_KEY_BASE.concat(fwEntry.topVersion), fwEntry.timestamp, fwEntry.device_id);
+                    pipe.zadd(fwEntry.topVersion, fwEntry.timestamp, fwEntry.device_id);
                 }
             }
             pipe.exec();
