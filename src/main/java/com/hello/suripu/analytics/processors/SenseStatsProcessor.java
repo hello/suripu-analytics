@@ -145,9 +145,9 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
                 final Long timestampMillis = periodicData.getUnixTime() * 1000L;
 
-//                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
-//                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
-//                }
+                if (checkpointTracker.isEligibleForTracking(timestampMillis)) {
+                    checkpointTracker.trackCheckpoint(shardId, sequenceNumber, timestampMillis);
+                }
 
                 // Grab FW version from Batch or periodic data for EVT units
                 final Integer firmwareVersion = (batchPeriodicDataWorker.getData().hasFirmwareVersion())
