@@ -154,20 +154,22 @@ public class SenseStatsProcessor implements IRecordProcessor {
                         ? batchPeriodicDataWorker.getData().getFirmwareVersion()
                         : periodicData.getFirmwareVersion();
 
-                final String fwHex = Integer.toHexString(firmwareVersion);
-                if (fwVersionTimestampMap.containsKey(fwHex) && fwVersionTimestampMap.get(fwHex).timestamp > timestampMillis) {
+                final String fwDecString = Integer.toString(firmwareVersion);
+                if (fwVersionTimestampMap.containsKey(fwDecString) && fwVersionTimestampMap.get(fwDecString).timestamp > timestampMillis) {
                     continue;
                 }
 
-                fwVersionTimestampMap.put(fwHex, new FirmwareInfo(fwHex, "0", deviceName, timestampMillis));
+                fwVersionTimestampMap.put(fwDecString, new FirmwareInfo(fwDecString, "0", deviceName, timestampMillis));
             }
 
             //If we're getting top fw info from the protobuf, only store that
-            if (batchPeriodicDataWorker.hasFirmwareTopVersion()) {
+            if (batchPeriodicDataWorker.hasFirmwareTopVersion() && !batchPeriodicDataWorker.getFirmwareTopVersion().equals("0")) {
                 final String topFWVersion = batchPeriodicDataWorker.getFirmwareTopVersion();
                 final String middleFWVersion = batchPeriodicDataWorker.getFirmwareMiddleVersion();
                 fwVersionTimestampMap.clear();
                 fwVersionTimestampMap.put(middleFWVersion, new FirmwareInfo(middleFWVersion, topFWVersion, deviceName, batchPeriodicDataWorker.getReceivedAt()));
+            } else {
+                LOGGER.error("error=no-top-fw sense_id={}", deviceName);
             }
 
             for(final Map.Entry<String, FirmwareInfo> mapEntry : fwVersionTimestampMap.entrySet()) {
