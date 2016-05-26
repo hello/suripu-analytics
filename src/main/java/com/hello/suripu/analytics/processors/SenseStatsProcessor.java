@@ -96,7 +96,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
             try {
                 batchPeriodicDataWorker = DataInputProtos.BatchPeriodicDataWorker.parseFrom(record.getData().array());
             } catch (InvalidProtocolBufferException e) {
-                LOGGER.error("Failed parsing protobuf: {}", e.getMessage());
+                LOGGER.error("error=protobuf-parsing-failure message={}", e.getMessage());
                 continue;
             }
 

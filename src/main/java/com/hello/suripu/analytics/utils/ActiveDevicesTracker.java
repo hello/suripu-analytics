@@ -34,7 +34,7 @@ public class ActiveDevicesTracker {
     private static final DateTimeFormatter SET_KEY_SUFFIX_PATTERN = DateTimeFormat.forPattern("yyyy_MM_dd_HH_00");
     private static final Integer HOURLY_SET_KEY_EXPIRATION_IN_HOURS = 48;
 
-    private static final String GENERIC_EXCEPTION_LOG_MESSAGE = "Jedis Connection Exception while returning resource to pool. Redis server down?";
+    private static final String GENERIC_EXCEPTION_LOG_MESSAGE = "error=jedis-connection-exception";
     private final static Logger LOGGER = LoggerFactory.getLogger(ActiveDevicesTracker.class);
 
     private final JedisPool jedisPool;
@@ -78,11 +78,11 @@ public class ActiveDevicesTracker {
             }
             pipe.exec();
         }catch (JedisDataException exception) {
-            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            LOGGER.error("error=jedis-data-exception message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         } catch(Exception exception) {
-            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            LOGGER.error("error=redis-unknown-failure message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         }
@@ -93,7 +93,7 @@ public class ActiveDevicesTracker {
                 LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
-        LOGGER.debug("Tracked {} active devices key={}", devicesSeen.size(), activeKey);
+        LOGGER.debug("action=active-devices-tracked device_count={} key={}", devicesSeen.size(), activeKey);
     }
 
     public void trackFirmwares(final Map<String, FirmwareInfo> seenFirmwares) {
@@ -121,11 +121,11 @@ public class ActiveDevicesTracker {
             }
             pipe.exec();
         }catch (JedisDataException exception) {
-            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            LOGGER.error("error=jedis-data-exception message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         } catch(Exception exception) {
-            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            LOGGER.error("error=redis-unknown-failure message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         }
@@ -136,7 +136,7 @@ public class ActiveDevicesTracker {
                 LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
-        LOGGER.debug("Tracked {} device firmware versions", seenFirmwares.size());
+        LOGGER.debug("action=firmware-info-tracked device_count={}", seenFirmwares.size());
     }
 
     public void trackWifiInfo(final Map<String, WifiInfo> wifiInfos) {
@@ -151,11 +151,11 @@ public class ActiveDevicesTracker {
             }
             pipe.exec();
         }catch (JedisDataException exception) {
-            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            LOGGER.error("error=jedis-data-exception message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         } catch(Exception exception) {
-            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            LOGGER.error("error=redis-unknown-failure message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         }
@@ -166,7 +166,7 @@ public class ActiveDevicesTracker {
                 LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
             }
         }
-        LOGGER.debug("Tracked wifi info for {} senses", wifiInfos.size());
+        LOGGER.debug("action=wifi-info-tracked device_count={}", wifiInfos.size());
     }
 
     public void trackUptime(final Map<String, Integer> uptimes) {
@@ -185,11 +185,11 @@ public class ActiveDevicesTracker {
             }
             pipe.exec();
         }catch (JedisDataException exception) {
-            LOGGER.error("Failed getting data out of redis: {}", exception.getMessage());
+            LOGGER.error("error=jedis-data-exception message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         } catch(Exception exception) {
-            LOGGER.error("Unknown error connection to redis: {}", exception.getMessage());
+            LOGGER.error("error=redis-unknown-failure message={}", exception.getMessage());
             jedisPool.returnBrokenResource(jedis);
             return;
         }
