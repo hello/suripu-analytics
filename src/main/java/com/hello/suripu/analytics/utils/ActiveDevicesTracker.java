@@ -25,8 +25,6 @@ public class ActiveDevicesTracker {
     private static final String MIDDLE_FIRMWARE_KEY_BASE = "middle:";
     private static final String FIRMWARES_SEEN_SET_KEY = "firmwares_seen";
     private static final String TOP_FIRMWARES_SEEN_SET_KEY = "top_firmwares_seen";
-    private static final String DEVICE_TOP_FIRMWARE_SET_KEY = "device_top_firmware";
-    private static final String DEVICE_MIDDLE_FIRMWARE_SET_KEY = "device_middle_firmware";
     private static final String WIFI_INFO_HASH_KEY = "wifi_info";
     private static final String SENSE_UPTIME_HSET_KEY = "sense_uptimes";
     private static final String HOURLY_ACTIVE_SENSE_SET_KEY_PREFIX = "hourly_active_sense_%s";
