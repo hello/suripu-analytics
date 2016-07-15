@@ -72,5 +72,5 @@ max_records: 5000
 metrics_enabled: true
 
 redis: 
-  host: stats.xoe7je.0001.use1.cache.amazonaws.com
+  host: stats-002.xoe7je.0001.use1.cache.amazonaws.com
   port: 6379
