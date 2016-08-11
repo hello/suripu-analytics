@@ -200,7 +200,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
     public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {
 
         LOGGER.warn("SHUTDOWN: {}", shutdownReason.toString());
-        if(shutdownReason == ShutdownReason.TERMINATE) {
+        if(shutdownReason.equals(ShutdownReason.TERMINATE)) {
             LOGGER.warn("Going to checkpoint");
             try {
                 iRecordProcessorCheckpointer.checkpoint();
