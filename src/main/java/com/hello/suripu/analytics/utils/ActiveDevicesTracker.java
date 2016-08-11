@@ -1,21 +1,24 @@
 package com.hello.suripu.analytics.utils;
 
 import com.google.common.collect.ImmutableMap;
+
 import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.core.models.FirmwareInfo;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
-
-import java.util.Map;
 
 public class ActiveDevicesTracker {
     private static final String SENSE_ACTIVE_SET_KEY = "active_senses";
@@ -88,7 +91,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE + " message={}", e.getMessage());
             }
         }
         LOGGER.debug("action=active-devices-tracked device_count={} key={}", devicesSeen.size(), activeKey);
@@ -131,7 +134,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE + " message={}", e.getMessage());
             }
         }
         LOGGER.debug("action=firmware-info-tracked device_count={}", seenFirmwares.size());
@@ -161,7 +164,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE + " message={}", e.getMessage());
             }
         }
         LOGGER.debug("action=wifi-info-tracked device_count={}", wifiInfos.size());
@@ -195,7 +198,7 @@ public class ActiveDevicesTracker {
             try{
                 jedisPool.returnResource(jedis);
             }catch (JedisConnectionException e) {
-                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE);
+                LOGGER.error(GENERIC_EXCEPTION_LOG_MESSAGE + " message={}", e.getMessage());
             }
         }
         LOGGER.debug("action=track-uptime num_senses={}", uptime.size());
