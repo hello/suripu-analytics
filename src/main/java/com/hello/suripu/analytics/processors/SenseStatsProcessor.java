@@ -1,5 +1,10 @@
 package com.hello.suripu.analytics.processors;
 
+import com.google.common.collect.Maps;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
@@ -9,17 +14,12 @@ import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnels;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
@@ -199,5 +199,17 @@ public class SenseStatsProcessor implements IRecordProcessor {
 
     public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {
 
+        LOGGER.warn("SHUTDOWN: {}", shutdownReason.toString());
+        if(shutdownReason.equals(ShutdownReason.TERMINATE)) {
+            LOGGER.warn("Going to checkpoint");
+            try {
+                iRecordProcessorCheckpointer.checkpoint();
+                LOGGER.warn("Checkpointed successfully");
+            } catch (InvalidStateException e) {
+                LOGGER.error(e.getMessage());
+            } catch (ShutdownException e) {
+                LOGGER.error(e.getMessage());
+            }
+        }
     }
 }
