@@ -138,6 +138,7 @@ public class AnalyticsProcessor extends Application<AnalyticsConfiguration>
                 .executorService("analytics")
                 .workQueue(new LinkedBlockingQueue(configuration.maxThreads()))
                 .minThreads(configuration.minThreads())
+                .maxThreads(configuration.maxThreads())
                 .build();
 
         // SENSE
