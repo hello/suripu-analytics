@@ -11,14 +11,13 @@
 
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <dropwizard.version>0.8.2</dropwizard.version>
+      <dropwizard.version>1.0.2</dropwizard.version>
       <metrics.version>3.1.2</metrics.version>
-      <aws.sdk.version>1.9.37</aws.sdk.version>
-      <protobuf.version>2.5.0</protobuf.version>
-      <jodatime.version>20150319</jodatime.version>
+      <aws.sdk.version>1.10.34</aws.sdk.version>
+      <protobuf.version>2.6.0</protobuf.version>
       <jackson.version>1.8.9</jackson.version>
-      <suripu.version>0.8.5213</suripu.version>
-      <java.version>1.7</java.version>
+      <suripu.version>0.8.5782</suripu.version>
+      <java.version>1.8</java.version>
       <jersey.version>2.19</jersey.version>
   </properties>
 
@@ -117,11 +116,6 @@
       <version>2.9.0</version>
     </dependency>
     <dependency>
-      <groupId>suripu-jodatime</groupId>
-      <artifactId>suripu-jodatime</artifactId>
-      <version>${jodatime.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.hello.suripu</groupId>
       <artifactId>suripu-core</artifactId>
       <version>${suripu.version}</version>
@@ -138,7 +132,7 @@
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
-      <artifactId>suripu-coredw8</artifactId>
+      <artifactId>suripu-coredropwizard</artifactId>
       <version>${suripu.version}</version>
     </dependency>
     <dependency>
