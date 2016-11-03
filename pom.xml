@@ -152,13 +152,8 @@
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
-<<<<<<< HEAD
       <artifactId>suripu-coredropwizard</artifactId>
       <version>${suripu.version}</version>
-=======
-      <artifactId>suripu-coredw8</artifactId>
-      <version>0.8.5213</version>
->>>>>>> first pass
     </dependency>
     <dependency>
       <groupId>com.hello.suripu</groupId>
