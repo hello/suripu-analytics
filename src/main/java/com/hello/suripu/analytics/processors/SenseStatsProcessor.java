@@ -194,7 +194,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
                 }
             }
 
-            //end track device data
+            //End track device data
 
         }
 
