@@ -1,7 +1,5 @@
 package com.hello.suripu.analytics.processors;
 
-import com.google.common.collect.ImmutableList;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -11,13 +9,12 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
-import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import com.google.common.collect.ImmutableList;
 import com.hello.suripu.analytics.configuration.AnalyticsConfiguration;
 import com.hello.suripu.analytics.framework.AnalyticsEnvironmentCommand;
-import com.hello.suripu.coredw8.metrics.RegexMetricFilter;
-
+import com.hello.suripu.coredropwizard.metrics.RegexMetricFilter;
 import io.dropwizard.setup.Environment;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
