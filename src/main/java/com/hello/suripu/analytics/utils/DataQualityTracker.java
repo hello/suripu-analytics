@@ -78,6 +78,7 @@ public class DataQualityTracker {
             final Integer tmp = periodic_data.getTemperature();
             final Integer db = periodic_data.getAudioPeakBackgroundEnergyDb();
 
+            //co2
             if (co2 < LOW_CO2_THRESHOLD) {
                 lowco2.mark();
                 LOGGER.error("bad_sensor=co2 sensor_val={} device_id={} fw_version={}", co2, device_id, fw_version);
@@ -86,6 +87,7 @@ public class DataQualityTracker {
                 LOGGER.error("bad_sensor=co2 sensor_val={} device_id={} fw_version={}", co2, device_id, fw_version);
             }
 
+            //pressure
             if (pa < LOW_PRESSURE_THRESHOLD) {
                 lowpa.mark();
                 LOGGER.error("bad_sensor=pa sensor_val={} device_id={} fw_version={}", pa, device_id, fw_version);
@@ -95,16 +97,19 @@ public class DataQualityTracker {
                 LOGGER.error("bad_sensor=pa sensor_val={} device_id={} fw_version={}", pa, device_id, fw_version);
             }
 
+            //uv
             if (uv > HIGH_UV_THRESHOLD) {
                 highuv.mark();
                 LOGGER.error("bad_sensor=uv sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
             }
 
+            //dust
             if (dust > HIGH_DUST_THRESHOLD) {
                 highdust.mark();
                 LOGGER.error("bad_sensor=uv sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
             }
 
+            //lux
             if (uvlux > HIGH_LUX_THRESHOLD) {
                 highlux.mark();
                 LOGGER.error("bad_sensor=uvlux sensor_val={} device_id={} fw_version={}", uvlux, device_id, fw_version);
@@ -115,6 +120,7 @@ public class DataQualityTracker {
                 LOGGER.error("bad_sensor=clearlux sensor_val={} device_id={} fw_version={}", clearlux, device_id, fw_version);
             }
 
+            //humidity
             if (hum < LOW_HUMIDITY_THRESHOLD) {
                 lowhum.mark();
                 LOGGER.error("bad_sensor=hum sensor_val={} device_id={} fw_version={}", hum, device_id, fw_version);
@@ -124,6 +130,7 @@ public class DataQualityTracker {
                 LOGGER.error("bad_sensor=hum sensor_val={} device_id={} fw_version={}", hum, device_id, fw_version);
             }
 
+            //temp
             if (tmp < LOW_TEMP_THRESHOLD) {
                 lowtmp.mark();
                 LOGGER.error("bad_sensor=tmp sensor_val={} device_id={} fw_version={}", tmp, device_id, fw_version);
@@ -133,6 +140,7 @@ public class DataQualityTracker {
                 LOGGER.error("bad_sensor=tmp sensor_val={} device_id={} fw_version={}", tmp, device_id, fw_version);
             }
 
+            //sound
             if (db > HIGH_NOISE_THRESHOLD) {
                 highdb.mark();
                 LOGGER.error("bad_sensor=db sensor_val={} device_id={} fw_version={}", db, device_id, fw_version);
