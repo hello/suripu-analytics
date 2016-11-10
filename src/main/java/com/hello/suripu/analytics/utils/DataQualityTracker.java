@@ -1,13 +1,19 @@
 package com.hello.suripu.analytics.utils;
 
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.hello.suripu.analytics.processors.SenseStatsProcessor;
 import com.hello.suripu.api.input.DataInputProtos;
 import org.slf4j.Logger;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Created by jyfan on 11/9/16.
  */
-public class DataQualityTrackerUtils {
+public class DataQualityTracker {
+
+    private final Logger LOGGER;
 
     //1.5
     private static final int LOW_CO2_THRESHOLD = 400;
@@ -25,20 +31,36 @@ public class DataQualityTrackerUtils {
     private static final int LOW_TEMP_THRESHOLD = 0 * 100; // in deg C
     private static final int HIGH_NOISE_THRESHOLD = (150 + 40 ) * 100;
 
-    public static void trackDataQuality(final DataInputProtos.batched_periodic_data batchedPeriodicData,
-                                        final Logger LOGGER,
-                                        final Meter lowco2,
-                                        final Meter highco2,
-                                        final Meter lowpa,
-                                        final Meter highpa,
-                                        final Meter highuv,
-                                        final Meter highdust,
-                                        final Meter highlux,
-                                        final Meter lowhum,
-                                        final Meter highhum,
-                                        final Meter lowtmp,
-                                        final Meter hightmp,
-                                        final Meter highdb) {
+    private final Meter lowco2;
+    private final Meter highco2;
+    private final Meter lowpa;
+    private final Meter highpa;
+    private final Meter highuv;
+    private final Meter highdust;
+    private final Meter highlux;
+    private final Meter lowhum;
+    private final Meter highhum;
+    private final Meter lowtmp;
+    private final Meter hightmp;
+    private final Meter highdb;
+
+    public DataQualityTracker(final MetricRegistry metrics, final Logger LOGGER) {
+        this.LOGGER = LOGGER;
+        lowco2 = metrics.meter(name(SenseStatsProcessor.class, "low-co2"));
+        highco2 = metrics.meter(name(SenseStatsProcessor.class, "high-co2"));
+        lowpa = metrics.meter(name(SenseStatsProcessor.class, "low-pa"));
+        highpa = metrics.meter(name(SenseStatsProcessor.class, "high-pa"));
+        highuv = metrics.meter(name(SenseStatsProcessor.class, "low-uv"));
+        highdust = metrics.meter(name(SenseStatsProcessor.class, "high-uv"));
+        highlux = metrics.meter(name(SenseStatsProcessor.class, "high-lux"));
+        lowhum = metrics.meter(name(SenseStatsProcessor.class, "low-hum"));
+        highhum = metrics.meter(name(SenseStatsProcessor.class, "high-hum"));
+        lowtmp = metrics.meter(name(SenseStatsProcessor.class, "low-tmp"));
+        hightmp = metrics.meter(name(SenseStatsProcessor.class, "high-tmp"));
+        highdb = metrics.meter(name(SenseStatsProcessor.class, "high-db"));
+    }
+
+    public void trackDataQuality(final DataInputProtos.batched_periodic_data batchedPeriodicData) {
 
         final String device_id = batchedPeriodicData.getDeviceId();
         final Integer fw_version = batchedPeriodicData.getFirmwareVersion();
