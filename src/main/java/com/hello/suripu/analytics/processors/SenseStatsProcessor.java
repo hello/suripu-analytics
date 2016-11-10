@@ -17,6 +17,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.hello.suripu.analytics.models.WifiInfo;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
+import com.hello.suripu.analytics.utils.DataQualityTrackerUtils;
 import com.hello.suripu.api.input.DataInputProtos;
 import com.hello.suripu.core.models.FirmwareInfo;
 
@@ -52,7 +53,19 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private final Meter waveCounts;
     private final Meter lowUptimeCount;
     private final Histogram uptimeDays;
+
+    private final Meter lowco2;
     private final Meter highco2;
+    private final Meter lowpa;
+    private final Meter highpa;
+    private final Meter highuv;
+    private final Meter highdust;
+    private final Meter highlux;
+    private final Meter lowhum;
+    private final Meter highhum;
+    private final Meter lowtmp;
+    private final Meter hightmp;
+    private final Meter highdb;
 
     private BloomFilter<CharSequence> bloomFilter;
     private Long lastFilterTimestamp;
@@ -67,7 +80,19 @@ public class SenseStatsProcessor implements IRecordProcessor {
         waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
         lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
         uptimeDays = metrics.histogram(name(SenseStatsProcessor.class, "uptime-days"));
+        lowco2 = metrics.meter(name(SenseStatsProcessor.class, "low-co2"));
         highco2 = metrics.meter(name(SenseStatsProcessor.class, "high-co2"));
+        lowpa = metrics.meter(name(SenseStatsProcessor.class, "low-pa"));
+        highpa = metrics.meter(name(SenseStatsProcessor.class, "high-pa"));
+        highuv = metrics.meter(name(SenseStatsProcessor.class, "low-uv"));
+        highdust = metrics.meter(name(SenseStatsProcessor.class, "high-uv"));
+        highlux = metrics.meter(name(SenseStatsProcessor.class, "high-lux"));
+        lowhum = metrics.meter(name(SenseStatsProcessor.class, "low-hum"));
+        highhum = metrics.meter(name(SenseStatsProcessor.class, "high-hum"));
+        lowtmp = metrics.meter(name(SenseStatsProcessor.class, "low-tmp"));
+        hightmp = metrics.meter(name(SenseStatsProcessor.class, "high-tmp"));
+        highdb = metrics.meter(name(SenseStatsProcessor.class, "high-db"));
+
     }
 
     public void initialize(String shardId) {
@@ -183,18 +208,22 @@ public class SenseStatsProcessor implements IRecordProcessor {
             wifiInfos.put(deviceName, new WifiInfo(rssi, connectedSSID));
 
             //Begin track bad device data
-            final String device_id = batchedPeriodicData.getDeviceId();
-            final Integer fw_version = batchedPeriodicData.getFirmwareVersion();
+            DataQualityTrackerUtils.trackDataQuality(batchedPeriodicData,
+                    LOGGER,
+                    lowco2,
+                    highco2,
+                    lowpa,
+                    highpa,
+                    highuv,
+                    highdust,
+                    highlux,
+                    lowhum,
+                    highhum,
+                    lowtmp,
+                    hightmp,
+                    highdb);
+            //End track bad device data
 
-            for (final DataInputProtos.periodic_data periodic_data : batchedPeriodicData.getDataList()) {
-                final Integer co2 = periodic_data.getCo2();
-                if (co2 > HIGH_CO2_THRESHOLD) {
-                    highco2.mark();
-                    LOGGER.error("bad_sensor=co2 sensor_val={} device_id={} fw_version={}", co2, device_id, fw_version);
-                }
-            }
-
-            //End track device data
 
         }
 
