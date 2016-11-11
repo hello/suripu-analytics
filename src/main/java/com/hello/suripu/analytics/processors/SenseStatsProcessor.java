@@ -63,7 +63,7 @@ public class SenseStatsProcessor implements IRecordProcessor {
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
         this.metrics= metricRegistry;
-        this.dataQualityTracker = new DataQualityTracker(metrics, LOGGER);
+        this.dataQualityTracker = new DataQualityTracker(metrics);
         messagesProcessed = metrics.meter(name(SenseStatsProcessor.class, "messages-processed"));
         waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
         lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));

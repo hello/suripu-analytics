@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.hello.suripu.analytics.processors.SenseStatsProcessor;
 import com.hello.suripu.api.input.DataInputProtos;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -13,7 +14,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class DataQualityTracker {
 
-    private final Logger LOGGER;
+    private final Logger LOGGER = LoggerFactory.getLogger(DataQualityTracker.class);
 
     //1.5
     private static final int LOW_CO2_THRESHOLD = 400;
@@ -44,8 +45,7 @@ public class DataQualityTracker {
     private final Meter hightmp;
     private final Meter highdb;
 
-    public DataQualityTracker(final MetricRegistry metrics, final Logger LOGGER) {
-        this.LOGGER = LOGGER;
+    public DataQualityTracker(final MetricRegistry metrics) {
         lowco2 = metrics.meter(name(SenseStatsProcessor.class, "low-co2"));
         highco2 = metrics.meter(name(SenseStatsProcessor.class, "high-co2"));
         lowpa = metrics.meter(name(SenseStatsProcessor.class, "low-pa"));
