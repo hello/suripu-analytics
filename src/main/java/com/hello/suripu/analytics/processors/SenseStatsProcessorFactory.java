@@ -6,6 +6,7 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorF
 import com.codahale.metrics.MetricRegistry;
 import com.hello.suripu.analytics.utils.ActiveDevicesTracker;
 import com.hello.suripu.analytics.utils.CheckpointTracker;
+import com.hello.suripu.analytics.utils.DataQualityTracker;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -18,6 +19,7 @@ public class SenseStatsProcessorFactory implements IRecordProcessorFactory {
     private final String streamName;
     private final String checkpointTableName;
     private final MetricRegistry metricRegistry;
+    private final DataQualityTracker dataQualityTracker;
 
     public SenseStatsProcessorFactory(final JedisPool jedisPool, final AmazonDynamoDB dynamoDBClient, final String streamName, final String checkpointTableName, final MetricRegistry metricRegistry) {
         this.jedisPool = jedisPool;
@@ -25,11 +27,12 @@ public class SenseStatsProcessorFactory implements IRecordProcessorFactory {
         this.streamName = streamName;
         this.checkpointTableName = checkpointTableName;
         this.metricRegistry = metricRegistry;
+        this.dataQualityTracker = new DataQualityTracker(metricRegistry);
     }
 
     public IRecordProcessor createProcessor() {
         final ActiveDevicesTracker activeDevicesTracker = new ActiveDevicesTracker(jedisPool);
         final CheckpointTracker checkpointTracker = new CheckpointTracker(dynamoDBClient, streamName, checkpointTableName);
-        return new SenseStatsProcessor(activeDevicesTracker, checkpointTracker, metricRegistry);
+        return new SenseStatsProcessor(activeDevicesTracker, checkpointTracker, metricRegistry, dataQualityTracker);
     }
 }

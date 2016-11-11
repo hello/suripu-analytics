@@ -59,11 +59,11 @@ public class SenseStatsProcessor implements IRecordProcessor {
     private String shardId = "No Lease Key";
 
 
-    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker, final MetricRegistry metricRegistry){
+    public SenseStatsProcessor(final ActiveDevicesTracker activeDevicesTracker, final CheckpointTracker checkpointTracker, final MetricRegistry metricRegistry, final DataQualityTracker dataQualityTracker){
         this.activeDevicesTracker = activeDevicesTracker;
         this.checkpointTracker = checkpointTracker;
         this.metrics= metricRegistry;
-        this.dataQualityTracker = new DataQualityTracker(metrics);
+        this.dataQualityTracker = dataQualityTracker;
         messagesProcessed = metrics.meter(name(SenseStatsProcessor.class, "messages-processed"));
         waveCounts = metrics.meter(name(SenseStatsProcessor.class, "wave-counts"));
         lowUptimeCount = metrics.meter(name(SenseStatsProcessor.class, "low-uptime"));
