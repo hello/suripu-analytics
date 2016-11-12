@@ -20,12 +20,13 @@ public class DataQualityTracker {
     private static final int LOW_CO2_THRESHOLD = 400;
     private static final int HIGH_CO2_THRESHOLD = 3500; //in ppm
     private static final int LOW_PRESSURE_THRESHOLD = 900 * 256 * 100; //in mbar
-    private static final int HIGH_PRESSURE_THRESHOLD = 1000 * 256 * 100; //in mbar
+    private static final int HIGH_PRESSURE_THRESHOLD = 1086 * 256 * 100; //strongest sea level
     private static final int HIGH_UV_THRESHOLD = 6;
+    private static final int HIGH_LUX_THRESHOLD_ONE_FIVE = 100000 * 125; //highest range of direct sunlight
 
     //1.0
     private static final int HIGH_DUST_THRESHOLD = 250 * 6; //6 is roughly density to raw conversion, rounded up
-    private static final int HIGH_LUX_THRESHOLD = 2000;
+    private static final int HIGH_LUX_THRESHOLD_ONE = 100000;
     private static final int HIGH_HUMIDITY_THRESHOLD = 99 * 100;
     private static final int LOW_HUMIDITY_THRESHOLD = 1 * 100;
     private static final int HIGH_TEMP_THRESHOLD = 100 * 100; // in deg C
@@ -67,85 +68,92 @@ public class DataQualityTracker {
 
         for (final DataInputProtos.periodic_data periodic_data : batchedPeriodicData.getDataList()) {
 
+            final Boolean hasco2 = periodic_data.hasCo2();
+            final Boolean haspa = periodic_data.hasPressure();
+            final Boolean has15light = periodic_data.hasLightSensor();
+            final Boolean hasdust = periodic_data.hasDust();
+            final Boolean hashum = periodic_data.hasHumidity();
+            final Boolean hastmp = periodic_data.hasTemperature();
+//            final Boolean hasdb = periodic_data.hasAudioPeakBackgroundEnergyDb();
+
             final Integer co2 = periodic_data.getCo2();
             final Integer pa = periodic_data.getPressure();
             final Integer uv = periodic_data.getLightSensor().getUvCount();
 
+            final Integer lux = periodic_data.getLight();
+
             final Integer dust = periodic_data.getDust();
-            final Integer uvlux = periodic_data.getLightSensor().getLuxCount();
-            final Integer clearlux = periodic_data.getLightSensor().getClear();
             final Integer hum = periodic_data.getHumidity();
             final Integer tmp = periodic_data.getTemperature();
-            final Integer db = periodic_data.getAudioPeakBackgroundEnergyDb();
+//            final Integer db = periodic_data.getAudioPeakBackgroundEnergyDb();
 
             //co2
-            if (co2 < LOW_CO2_THRESHOLD) {
+            if (hasco2 && co2 < LOW_CO2_THRESHOLD) {
                 lowco2.mark();
                 LOGGER.error("bad_sensor=co2 sensor_val={} device_id={} fw_version={}", co2, device_id, fw_version);
-            } else if (co2 > HIGH_CO2_THRESHOLD) {
+            } else if (hasco2 && co2 > HIGH_CO2_THRESHOLD) {
                 highco2.mark();
                 LOGGER.error("bad_sensor=co2 sensor_val={} device_id={} fw_version={}", co2, device_id, fw_version);
             }
 
             //pressure
-            if (pa < LOW_PRESSURE_THRESHOLD) {
+            if (haspa && pa < LOW_PRESSURE_THRESHOLD) {
                 lowpa.mark();
                 LOGGER.error("bad_sensor=pa sensor_val={} device_id={} fw_version={}", pa, device_id, fw_version);
 
-            } else if (pa > HIGH_PRESSURE_THRESHOLD) {
+            } else if (haspa && pa > HIGH_PRESSURE_THRESHOLD) {
                 highpa.mark();
                 LOGGER.error("bad_sensor=pa sensor_val={} device_id={} fw_version={}", pa, device_id, fw_version);
             }
 
             //uv
-            if (uv > HIGH_UV_THRESHOLD) {
+            if (has15light && uv > HIGH_UV_THRESHOLD) {
                 highuv.mark();
                 LOGGER.error("bad_sensor=uv sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
             }
 
             //dust
-            if (dust > HIGH_DUST_THRESHOLD) {
+            if (hasdust && dust > HIGH_DUST_THRESHOLD) {
                 highdust.mark();
                 LOGGER.error("bad_sensor=uv sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
             }
 
             //lux
-            if (uvlux > HIGH_LUX_THRESHOLD) {
+            if (has15light && lux > HIGH_LUX_THRESHOLD_ONE_FIVE) {
                 highlux.mark();
-                LOGGER.error("bad_sensor=uvlux sensor_val={} device_id={} fw_version={}", uvlux, device_id, fw_version);
+                LOGGER.error("bad_sensor=onefivelux sensor_val={} device_id={} fw_version={}", lux, device_id, fw_version);
             }
 
-            if (clearlux > HIGH_LUX_THRESHOLD) {
+            if (!has15light && lux > HIGH_LUX_THRESHOLD_ONE) {
                 highlux.mark();
-                LOGGER.error("bad_sensor=clearlux sensor_val={} device_id={} fw_version={}", clearlux, device_id, fw_version);
+                LOGGER.error("bad_sensor=onelux sensor_val={} device_id={} fw_version={}", lux, device_id, fw_version);
             }
 
             //humidity
-            if (hum < LOW_HUMIDITY_THRESHOLD) {
+            if (hashum && hum < LOW_HUMIDITY_THRESHOLD) {
                 lowhum.mark();
                 LOGGER.error("bad_sensor=hum sensor_val={} device_id={} fw_version={}", hum, device_id, fw_version);
 
-            } else if (hum > HIGH_HUMIDITY_THRESHOLD) {
+            } else if (hashum && hum > HIGH_HUMIDITY_THRESHOLD) {
                 highhum.mark();
                 LOGGER.error("bad_sensor=hum sensor_val={} device_id={} fw_version={}", hum, device_id, fw_version);
             }
 
             //temp
-            if (tmp < LOW_TEMP_THRESHOLD) {
+            if (hastmp && tmp < LOW_TEMP_THRESHOLD) {
                 lowtmp.mark();
                 LOGGER.error("bad_sensor=tmp sensor_val={} device_id={} fw_version={}", tmp, device_id, fw_version);
 
-            } else if (tmp > HIGH_TEMP_THRESHOLD) {
+            } else if (hastmp && tmp > HIGH_TEMP_THRESHOLD) {
                 hightmp.mark();
                 LOGGER.error("bad_sensor=tmp sensor_val={} device_id={} fw_version={}", tmp, device_id, fw_version);
             }
 
             //sound
-            if (db > HIGH_NOISE_THRESHOLD) {
-                highdb.mark();
-                LOGGER.error("bad_sensor=db sensor_val={} device_id={} fw_version={}", db, device_id, fw_version);
-
-            }
+//            if (hasdb && db > HIGH_NOISE_THRESHOLD) {
+//                highdb.mark();
+//                LOGGER.error("bad_sensor=db sensor_val={} device_id={} fw_version={}", db, device_id, fw_version);
+//            }
 
 
         }
