@@ -22,11 +22,11 @@ public class DataQualityTracker {
     private static final int LOW_PRESSURE_THRESHOLD = 900 * 256 * 100; //in mbar
     private static final int HIGH_PRESSURE_THRESHOLD = 1086 * 256 * 100; //strongest sea level
     private static final int HIGH_UV_THRESHOLD = 6;
-    private static final int HIGH_LUX_THRESHOLD_ONE_FIVE = 100000 * 125; //highest range of direct sunlight
+    private static final int HIGH_LUX_THRESHOLD_ONE_FIVE = 100000; //highest range of direct sunlight
 
     //1.0
     private static final int HIGH_DUST_THRESHOLD = 250 * 6; //6 is roughly density to raw conversion, rounded up
-    private static final int HIGH_LUX_THRESHOLD_ONE = 100000;
+    private static final int HIGH_LUX_THRESHOLD_ONE = 4194304; //max counts
     private static final int HIGH_HUMIDITY_THRESHOLD = 99 * 100;
     private static final int LOW_HUMIDITY_THRESHOLD = 1 * 100;
     private static final int HIGH_TEMP_THRESHOLD = 100 * 100; // in deg C
@@ -51,8 +51,8 @@ public class DataQualityTracker {
         highco2 = metrics.meter(name(SenseStatsProcessor.class, "high-co2"));
         lowpa = metrics.meter(name(SenseStatsProcessor.class, "low-pa"));
         highpa = metrics.meter(name(SenseStatsProcessor.class, "high-pa"));
-        highuv = metrics.meter(name(SenseStatsProcessor.class, "low-uv"));
-        highdust = metrics.meter(name(SenseStatsProcessor.class, "high-uv"));
+        highuv = metrics.meter(name(SenseStatsProcessor.class, "high-uv"));
+        highdust = metrics.meter(name(SenseStatsProcessor.class, "high-dust"));
         highlux = metrics.meter(name(SenseStatsProcessor.class, "high-lux"));
         lowhum = metrics.meter(name(SenseStatsProcessor.class, "low-hum"));
         highhum = metrics.meter(name(SenseStatsProcessor.class, "high-hum"));
@@ -115,7 +115,7 @@ public class DataQualityTracker {
             //dust
             if (hasdust && dust > HIGH_DUST_THRESHOLD) {
                 highdust.mark();
-                LOGGER.error("bad_sensor=uv sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
+                LOGGER.error("bad_sensor=dust sensor_val={} device_id={} fw_version={}", uv, device_id, fw_version);
             }
 
             //lux
